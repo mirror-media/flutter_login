@@ -92,10 +92,10 @@ class _LoginButtonState extends State<LoginButton> {
           isSuccess = await _loginHelper.signInWithGoogle();
         }
 
-        if (isSuccess) {
-          widget.onSuccess;
-        } else {
-          widget.onFailed;
+        if (isSuccess && widget.onSuccess != null) {
+          widget.onSuccess!();
+        } else if (!isSuccess && widget.onFailed != null) {
+          widget.onFailed!();
         }
         setState(() {
           _isLoading = false;
