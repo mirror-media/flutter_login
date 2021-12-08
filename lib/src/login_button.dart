@@ -13,8 +13,8 @@ enum LoginType {
 
 class LoginButton extends StatefulWidget {
   final LoginType type;
-  final Future? onSuccess;
-  final Future? onFailed;
+  final void Function()? onSuccess;
+  final void Function()? onFailed;
   final double textSize;
   final Color textColor;
   final bool showIcon;
@@ -88,9 +88,9 @@ class _LoginButtonState extends State<LoginButton> {
         });
         bool isSuccess = await _loginFunction;
         if (isSuccess) {
-          await widget.onSuccess;
+          widget.onSuccess;
         } else {
-          await widget.onFailed;
+          widget.onFailed;
         }
         setState(() {
           _isLoading = false;
