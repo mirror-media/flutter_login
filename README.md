@@ -68,7 +68,9 @@ loadingAnimationColor: Color    // Change the loading animation color of the Log
 ```
 
 Login helper:
+
 There are 4 main functions.
+
 All of them are Future and will return a bool that indicates whether or not the user is logged in successfully.
 
 1. signInWithEmailAndLink:
