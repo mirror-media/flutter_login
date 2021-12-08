@@ -14,9 +14,8 @@ enum LoginType {
 
 class LoginButton extends StatefulWidget {
   final LoginType type;
-  final FirebaseAuth auth;
-  final void Function()? onSuccess;
-  final void Function()? onFailed;
+  final Function()? onSuccess;
+  final Function()? onFailed;
   final double textSize;
   final Color textColor;
   final bool showIcon;
@@ -26,7 +25,6 @@ class LoginButton extends StatefulWidget {
   const LoginButton({
     Key? key,
     required this.type,
-    required this.auth,
     this.onSuccess,
     this.onFailed,
     this.textSize = 16,
@@ -45,11 +43,10 @@ class _LoginButtonState extends State<LoginButton> {
   bool _isLoading = false;
   late String _buttonText;
   late Widget _icon;
-  late LoginHelper _loginHelper;
+  final LoginHelper _loginHelper = LoginHelper();
 
   @override
   void initState() {
-    _loginHelper = LoginHelper(widget.auth);
     if (widget.type == LoginType.apple) {
       _buttonText = '以 Apple 帳號繼續';
       _icon = const FaIcon(
