@@ -12,10 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class LoginHelper {
-  final FirebaseAuth auth;
-  const LoginHelper(
-    this.auth,
-  );
+  final FirebaseAuth auth = FirebaseAuth.instance;
 
   Future<bool> signInWithEmailAndLink(String email, String link) async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
