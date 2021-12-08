@@ -42,7 +42,6 @@ class _LoginButtonState extends State<LoginButton> {
   bool _isLoading = false;
   late String _buttonText;
   late Widget _icon;
-  late Future<bool> _loginFunction;
   final LoginHelper _loginHelper = LoginHelper();
 
   @override
@@ -54,7 +53,6 @@ class _LoginButtonState extends State<LoginButton> {
         size: 18,
         color: Colors.black,
       );
-      _loginFunction = _loginHelper.signInWithApple();
     } else if (widget.type == LoginType.facebook) {
       _buttonText = '以 Facebook 帳號繼續';
       _icon = const FaIcon(
@@ -62,7 +60,6 @@ class _LoginButtonState extends State<LoginButton> {
         size: 18,
         color: Color.fromRGBO(59, 89, 152, 1),
       );
-      _loginFunction = _loginHelper.signInWithFacebook();
     } else if (widget.type == LoginType.google) {
       _buttonText = '以 Google 帳號繼續';
       _icon = SvgPicture.asset(
@@ -71,7 +68,6 @@ class _LoginButtonState extends State<LoginButton> {
         width: 16,
         height: 16,
       );
-      _loginFunction = _loginHelper.signInWithGoogle();
     }
 
     if (!widget.showIcon) {
@@ -87,7 +83,15 @@ class _LoginButtonState extends State<LoginButton> {
         setState(() {
           _isLoading = true;
         });
-        bool isSuccess = await _loginFunction;
+        bool isSuccess;
+        if (widget.type == LoginType.apple) {
+          isSuccess = await _loginHelper.signInWithApple();
+        } else if (widget.type == LoginType.facebook) {
+          isSuccess = await _loginHelper.signInWithFacebook();
+        } else {
+          isSuccess = await _loginHelper.signInWithGoogle();
+        }
+
         if (isSuccess) {
           widget.onSuccess;
         } else {
