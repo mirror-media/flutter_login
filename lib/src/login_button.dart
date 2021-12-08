@@ -67,6 +67,7 @@ class _LoginButtonState extends State<LoginButton> {
       _buttonText = '以 Google 帳號繼續';
       _icon = SvgPicture.asset(
         'assets/images/googleLogo.svg',
+        package: 'flutter_login',
         width: 16,
         height: 16,
       );
