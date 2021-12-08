@@ -29,11 +29,13 @@ Before use this package, make sure you have already set up your Firebase and set
 
 1. Add below lines to your project's pubspec.yaml dependencies.
 
+```yaml
 flutter_login:
     git:
       url: https://github.com/mirror-media/flutter_login.git
       ref: main
       version: ^0.0.1
+```
 
 2. Import library by adding the following line to where you want to use button or helper.
 ```dart
@@ -74,7 +76,8 @@ All of them are Future and will return a bool that indicates whether or not the 
 Future<bool> signInWithEmailAndLink(String email, String link)
 ```
 email is the email address that will be sent to, link is the user will be redirected to when there is no application.
-Notice: It will save the email by used SharedPreferences with key "signInEmail", you will need to get it from shared preferences when the user open the application from login email to verify.
+
+**Notice: It will save the email by used SharedPreferences with key "signInEmail", you will need to get it from shared preferences when the user open the application from login email to verify.**
 
 2. signInWithGoogle:
 ```dart
