@@ -54,7 +54,7 @@ enum LoginType {
 
 Login button widget:
 ```dart
-LoginButton(
+Widget LoginButton(
 type: LoginType // LoginType is required, others are optional
 onSuccess: Function? //Do after login success
 onFailed: Function? //Do after login failed
@@ -79,7 +79,7 @@ Future<bool> signInWithEmailAndLink(String email, String link)
 ```
 email is the email address that will be sent to, link is the user will be redirected to when there is no application.
 
-**Notice: It will save the email by used SharedPreferences with key "signInEmail", you will need to get it from shared preferences when the user open the application from login email to verify.**
+**Notice: It will save the email as String by used SharedPreferences with key "signInEmail", you will need to get it from shared preferences when the user open the application from login email to verify.**
 
 2. signInWithGoogle:
 ```dart
