@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -13,6 +14,7 @@ enum LoginType {
 
 class LoginButton extends StatefulWidget {
   final LoginType type;
+  final FirebaseAuth auth;
   final void Function()? onSuccess;
   final void Function()? onFailed;
   final double textSize;
@@ -24,6 +26,7 @@ class LoginButton extends StatefulWidget {
   const LoginButton({
     Key? key,
     required this.type,
+    required this.auth,
     this.onSuccess,
     this.onFailed,
     this.textSize = 16,
@@ -42,10 +45,11 @@ class _LoginButtonState extends State<LoginButton> {
   bool _isLoading = false;
   late String _buttonText;
   late Widget _icon;
-  final LoginHelper _loginHelper = LoginHelper();
+  late LoginHelper _loginHelper;
 
   @override
   void initState() {
+    _loginHelper = LoginHelper(widget.auth);
     if (widget.type == LoginType.apple) {
       _buttonText = '以 Apple 帳號繼續';
       _icon = const FaIcon(

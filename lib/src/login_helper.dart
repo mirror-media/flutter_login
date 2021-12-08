@@ -12,7 +12,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class LoginHelper {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseAuth auth;
+  const LoginHelper(
+    this.auth,
+  );
 
   Future<bool> signInWithEmailAndLink(String email, String link) async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
@@ -29,7 +32,7 @@ class LoginHelper {
     );
 
     bool isSuccess = false;
-    await _auth
+    await auth
         .sendSignInLinkToEmail(email: email, actionCodeSettings: acs)
         .catchError((onError) {
       print('Error sending email verification $onError');
@@ -58,7 +61,7 @@ class LoginHelper {
       );
 
       // Once signed in, return the UserCredential
-      await FirebaseAuth.instance.signInWithCredential(credential);
+      await auth.signInWithCredential(credential);
 
       return true;
     } catch (e) {
@@ -77,7 +80,7 @@ class LoginHelper {
         final OAuthCredential credential =
             FacebookAuthProvider.credential(loginResult.accessToken!.token);
         // Once signed in, return the UserCredential
-        await FirebaseAuth.instance.signInWithCredential(credential);
+        await auth.signInWithCredential(credential);
         return true;
       } else {
         return false;
@@ -131,7 +134,7 @@ class LoginHelper {
 
       // Sign in the user with Firebase. If the nonce we generated earlier does
       // not match the nonce in `appleCredential.identityToken`, sign in will fail.
-      await FirebaseAuth.instance.signInWithCredential(oauthCredential);
+      await auth.signInWithCredential(oauthCredential);
       return true;
     } catch (e) {
       return false;
