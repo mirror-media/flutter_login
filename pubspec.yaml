@@ -24,7 +24,7 @@ dependencies:
   # loading animations
   flutter_spinkit: ^5.1.0
   # svg file loader
-  flutter_svg: ^0.23.0+1
+  flutter_svg: ^1.0.0
   # The Font Awesome Icon pack available as set of Flutter Icons.
   font_awesome_flutter: ^9.1.0
   # shared_preferences
