@@ -13,6 +13,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class LoginHelper {
   final FirebaseAuth auth = FirebaseAuth.instance;
+  late UserCredential userCredential;
 
   Future<bool> signInWithEmailAndLink(String email, String link) async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
@@ -58,9 +59,17 @@ class LoginHelper {
       );
 
       // Once signed in, return the UserCredential
-      await auth.signInWithCredential(credential);
+      userCredential = await auth.signInWithCredential(credential);
 
       return true;
+    } on FirebaseAuthException catch (e) {
+      print('SignInWithGoogle failed error code: ${e.code}');
+      print(e.message);
+      if (e.code == 'account-exists-with-different-credential') {
+        return await accountExists(e);
+      } else {
+        return false;
+      }
     } catch (e) {
       print('SignInWithGoogle failed: ${e.toString()}');
       return false;
@@ -77,8 +86,16 @@ class LoginHelper {
         final OAuthCredential credential =
             FacebookAuthProvider.credential(loginResult.accessToken!.token);
         // Once signed in, return the UserCredential
-        await auth.signInWithCredential(credential);
+        userCredential = await auth.signInWithCredential(credential);
         return true;
+      } else {
+        return false;
+      }
+    } on FirebaseAuthException catch (e) {
+      print('SignInWithFacebook failed error code: ${e.code}');
+      print(e.message);
+      if (e.code == 'account-exists-with-different-credential') {
+        return await accountExists(e);
       } else {
         return false;
       }
@@ -131,10 +148,64 @@ class LoginHelper {
 
       // Sign in the user with Firebase. If the nonce we generated earlier does
       // not match the nonce in `appleCredential.identityToken`, sign in will fail.
-      await auth.signInWithCredential(oauthCredential);
+      userCredential = await auth.signInWithCredential(oauthCredential);
       return true;
+    } on FirebaseAuthException catch (e) {
+      print('signInWithApple failed error code: ${e.code}');
+      print(e.message);
+      if (e.code == 'account-exists-with-different-credential') {
+        return await accountExists(e);
+      } else {
+        return false;
+      }
     } catch (e) {
+      print('signInWithApple failed: ${e.toString()}');
       return false;
     }
   }
+
+  Future<bool> accountExists(FirebaseAuthException e) async {
+    if (e.email == null || e.credential == null) {
+      print('email or credential is missing');
+      return false;
+    }
+    // The account already exists with a different credential
+    String email = e.email!;
+    AuthCredential pendingCredential = e.credential!;
+
+    // Fetch a list of what sign-in methods exist for the conflicting user
+    List<String> userSignInMethods =
+        await auth.fetchSignInMethodsForEmail(email);
+
+    if (userSignInMethods.first == 'facebook.com') {
+      bool isSuccess = await signInWithFacebook();
+      if (!isSuccess) return false;
+
+      // Link the pending credential with the existing account
+      userCredential =
+          await userCredential.user!.linkWithCredential(pendingCredential);
+      return true;
+    } else if (userSignInMethods.first == 'apple.com') {
+      bool isSuccess = await signInWithApple();
+      if (!isSuccess) return false;
+
+      // Link the pending credential with the existing account
+      userCredential =
+          await userCredential.user!.linkWithCredential(pendingCredential);
+      return true;
+    } else if (userSignInMethods.first == 'google.com') {
+      bool isSuccess = await signInWithGoogle();
+      if (!isSuccess) return false;
+
+      // Link the pending credential with the existing account
+      userCredential =
+          await userCredential.user!.linkWithCredential(pendingCredential);
+      return true;
+    } else {
+      print('other sign in method already exists');
+      return false;
+    }
+  }
+
+  bool get isNewUser => userCredential.additionalUserInfo!.isNewUser;
 }
