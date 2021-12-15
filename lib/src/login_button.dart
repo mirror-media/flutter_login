@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -14,7 +13,7 @@ enum LoginType {
 
 class LoginButton extends StatefulWidget {
   final LoginType type;
-  final Function()? onSuccess;
+  final ValueSetter<bool>? onSuccess;
   final Function()? onFailed;
   final double textSize;
   final Color textColor;
@@ -94,7 +93,7 @@ class _LoginButtonState extends State<LoginButton> {
         }
 
         if (isSuccess && widget.onSuccess != null) {
-          widget.onSuccess!();
+          widget.onSuccess!(_loginHelper.isNewUser);
         } else if (!isSuccess && widget.onFailed != null) {
           widget.onFailed!();
         }
