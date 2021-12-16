@@ -56,7 +56,7 @@ Login button widget:
 ```dart
 Widget LoginButton(
 type: LoginType // LoginType is required, others are optional
-onSuccess: Function? //Do after login success
+onSuccess: Function(bool isNewUser)? //Do after login success
 onFailed: Function? //Do after login failed
 textSize: double    // Change the text size of the LoginButton, default is 16.0
 textColor: Color    // Change the text color of the LoginButton, default is Colors.black
