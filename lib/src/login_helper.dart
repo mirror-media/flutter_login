@@ -182,6 +182,86 @@ class LoginHelper {
     }
   }
 
+  Future<bool> createUserWithEmailAndPassword(
+    String email,
+    String password, {
+    bool ifExistsTrySignIn = true,
+    BuildContext? context,
+  }) async {
+    try {
+      userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
+      return true;
+    } on FirebaseAuthException catch (e) {
+      error = e;
+      if (e.code == 'weak-password') {
+        print('The password provided is too weak.');
+      } else if (e.code == 'email-already-in-use') {
+        print('The account already exists for that email.');
+        if (ifExistsTrySignIn) {
+          return await signInWithEmailAndPassword(
+            email,
+            password,
+            context: context,
+          );
+        }
+      }
+      return false;
+    } catch (e) {
+      error = e;
+      print(e);
+      return false;
+    }
+  }
+
+  Future<bool> signInWithEmailAndPassword(
+    String email,
+    String password, {
+    bool ifNotExistsCreateUser = true,
+    bool askAgain = false,
+    BuildContext? context,
+  }) async {
+    try {
+      userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
+      return true;
+    } on FirebaseAuthException catch (e) {
+      error = e;
+      if (e.code == 'user-not-found') {
+        print('No user found for that email.');
+        if (ifNotExistsCreateUser) {
+          return await createUserWithEmailAndPassword(
+            email,
+            password,
+            context: context,
+          );
+        }
+      } else if (e.code == 'wrong-password') {
+        print('Wrong password provided for that user.');
+        if (askAgain && context != null) {
+          String? newPassword = await _askUserKeyPassword(
+            context,
+            email,
+            isTryAgain: true,
+          );
+          if (newPassword == null) {
+            return false;
+          } else {
+            return await signInWithEmailAndPassword(
+              email,
+              newPassword,
+              askAgain: askAgain,
+              context: context,
+            );
+          }
+        }
+      } else if (e.code == 'account-exists-with-different-credential') {
+        return await accountExists(e, context);
+      }
+      return false;
+    }
+  }
+
   Future<bool> accountExists(
     FirebaseAuthException e,
     BuildContext? context,
@@ -200,7 +280,7 @@ class LoginHelper {
 
     if (userSignInMethods.first == 'facebook.com') {
       if (context != null) {
-        _showErrorHint(context, 'Facebook');
+        _showErrorHint(context, 'Facebook', email);
       }
       bool isSuccess = await signInWithFacebook();
       if (!isSuccess) return false;
@@ -211,7 +291,7 @@ class LoginHelper {
       return true;
     } else if (userSignInMethods.first == 'apple.com') {
       if (context != null) {
-        _showErrorHint(context, 'Apple');
+        _showErrorHint(context, 'Apple', email);
       }
       bool isSuccess = await signInWithApple();
       if (!isSuccess) return false;
@@ -222,7 +302,7 @@ class LoginHelper {
       return true;
     } else if (userSignInMethods.first == 'google.com') {
       if (context != null) {
-        _showErrorHint(context, 'Google');
+        _showErrorHint(context, 'Google', email);
       }
       bool isSuccess = await signInWithGoogle();
       if (!isSuccess) return false;
@@ -231,17 +311,32 @@ class LoginHelper {
       userCredential =
           await userCredential.user!.linkWithCredential(pendingCredential);
       return true;
+    } else if (userSignInMethods.first == 'password') {
+      if (context != null) {
+        String? newPassword = await _askUserKeyPassword(context, email);
+        if (newPassword != null) {
+          bool isSuccess = await signInWithEmailAndPassword(
+            email,
+            newPassword,
+            context: context,
+          );
+          if (!isSuccess) return false;
+          userCredential =
+              await userCredential.user!.linkWithCredential(pendingCredential);
+          return true;
+        }
+      }
     } else {
       print('other sign in method already exists');
-      return false;
     }
+    return false;
   }
 
   bool get isNewUser => userCredential.additionalUserInfo!.isNewUser;
 
   dynamic get signinError => error;
 
-  void _showErrorHint(BuildContext context, String loginType) {
+  void _showErrorHint(BuildContext context, String loginType, String email) {
     if (Platform.isIOS) {
       showCupertinoDialog(
         context: context,
@@ -249,7 +344,7 @@ class LoginHelper {
           return CupertinoAlertDialog(
             title: Text('曾使用$loginType登入'),
             content: Text(
-                '由於此Email曾使用$loginType登入，故麻煩您接下來先以$loginType登入以連結帳戶\n連結成功後未來即可使用此登入方式'),
+                '由於$email曾使用$loginType登入，故麻煩您接下來先以$loginType登入$email以連結帳戶\n連結成功後未來即可使用此登入方式'),
             actions: [
               CupertinoDialogAction(
                 child: const Text('確定'),
@@ -277,5 +372,83 @@ class LoginHelper {
         },
       );
     }
+  }
+
+  Future<String?> _askUserKeyPassword(
+    BuildContext context,
+    String email, {
+    bool isTryAgain = false,
+  }) async {
+    String? password;
+    String title = '曾使用帳號密碼登入';
+    String content =
+        '由於$email曾使用帳號密碼登入，故麻煩您輸入密碼登入$email以連結帳戶\n連結成功後未來即可使用此登入方式';
+    if (isTryAgain) {
+      title = '密碼錯誤';
+      content = '密碼錯誤，請重新輸入';
+    }
+    Widget textField = TextField(
+      obscureText: true,
+      enableSuggestions: false,
+      autocorrect: false,
+      autofocus: true,
+      onChanged: (value) {
+        password = value;
+      },
+      decoration: const InputDecoration(hintText: "請輸入密碼"),
+    );
+    if (Platform.isIOS) {
+      showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          return CupertinoAlertDialog(
+            title: Text(title),
+            content: Column(
+              children: [
+                Text(content),
+                textField,
+              ],
+            ),
+            actions: [
+              CupertinoDialogAction(
+                child: const Text('確定'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              CupertinoDialogAction(
+                child: const Text('取消'),
+                isDestructiveAction: true,
+                onPressed: () => Navigator.of(context).pop(),
+              )
+            ],
+          );
+        },
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text(title),
+            content: Column(
+              children: [
+                Text(content),
+                textField,
+              ],
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('確定'),
+              )
+            ],
+          );
+        },
+      );
+    }
+
+    if (password == '' || password == ' ') {
+      password = null;
+    }
+    return password;
   }
 }
