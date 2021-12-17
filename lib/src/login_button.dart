@@ -15,6 +15,7 @@ class LoginButton extends StatefulWidget {
   final LoginType type;
   final ValueSetter<bool>? onSuccess;
   final ValueSetter<dynamic>? onFailed;
+  final String? buttonText;
   final double textSize;
   final Color textColor;
   final bool showIcon;
@@ -26,6 +27,7 @@ class LoginButton extends StatefulWidget {
     required this.type,
     this.onSuccess,
     this.onFailed,
+    this.buttonText,
     this.textSize = 16,
     this.textColor = Colors.black,
     this.showIcon = true,
@@ -72,6 +74,10 @@ class _LoginButtonState extends State<LoginButton> {
 
     if (!widget.showIcon) {
       _icon = Container();
+    }
+
+    if (widget.buttonText != null) {
+      _buttonText = widget.buttonText!;
     }
     super.initState();
   }
