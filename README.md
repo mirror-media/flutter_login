@@ -104,11 +104,15 @@ Future<bool> signInWithEmailAndLink(String email, String link)
 email is the email address that will be sent to, link is the user will be redirected to when there is no application.
 
 **Notice: It will save the email as String by used SharedPreferences with key "signInEmail", you will need to get it from shared preferences when the user open the application from login email to verify.**
+
 **Notice 2: If you want to use this sign in method, you need to open passwordless sign in in firebase console.**
 
 2. Third party sign in:
+
 Now support Google, Facebook, and Apple.
+
 They have same optional named parameter, handlingAccountExistsWithDifferentCredentialError and context.
+
 - handlingAccountExistsWithDifferentCredentialError decide whether or not handle account-exists-with-different-credential error, default is true.
 - context is for show the hint dialog when account-exists-with-different-credential error happened, when it is null, dialog will not be shown.
 
@@ -136,9 +140,12 @@ Future<bool> signInWithApple({
 ```
 
 3. Email and password sign in:
+
 There are two parameter: email and password. And three optional named parameters:  ifNotExistsCreateUser, askAgain, context.
+
 - ifNotExistsCreateUser: Decide if can't find user whether directly create one new user via createUserWithEmailAndPassword(), default is true.
 - askAgain: Decide whether show a dialog when user password not correct, default is false. 
+
 **Because it will show dialog, context must be set, or it will be ignored.**
 - context: BuildContext for show dialog.
 
@@ -153,7 +160,9 @@ Future<bool> signInWithEmailAndPassword(
 ```
 
 4. Create new user with email and password:
+
 There are two parameter: email and password. And two optional named parameters:  ifExistsTrySignIn, context.
+
 - ifExistsTrySignIn: Decide if email is already exists, whether directly try sign in, default is true.
 - context: BuildContext for show dialog, only use for signInWithEmailAndPassword() when ifExistsTrySignIn is true.
 
@@ -167,10 +176,13 @@ Future<bool> createUserWithEmailAndPassword(
 ```
 
 Others:
+
 It has two getter, isNewUser and signinError.
 
 - isNewUser: It will return a boolean indicating whether user is new.
+
 **Notice: Only use after signIn successfully, or may get error**
 
 - signinError: It will return dynamic that previous sign in method catch error.
+
 **Notice: Only use after signIn failed, or may get null**
