@@ -76,7 +76,7 @@ class LoginHelper {
         return false;
       }
       if (e.code == 'account-exists-with-different-credential') {
-        return await accountExists(e, context);
+        return await _accountExists(e, context);
       } else {
         return false;
       }
@@ -113,7 +113,7 @@ class LoginHelper {
         return false;
       }
       if (e.code == 'account-exists-with-different-credential') {
-        return await accountExists(e, context);
+        return await _accountExists(e, context);
       } else {
         return false;
       }
@@ -170,7 +170,7 @@ class LoginHelper {
         return false;
       }
       if (e.code == 'account-exists-with-different-credential') {
-        return await accountExists(e, context);
+        return await _accountExists(e, context);
       } else {
         return false;
       }
@@ -255,13 +255,13 @@ class LoginHelper {
           }
         }
       } else if (e.code == 'account-exists-with-different-credential') {
-        return await accountExists(e, context);
+        return await _accountExists(e, context);
       }
       return false;
     }
   }
 
-  Future<bool> accountExists(
+  Future<bool> _accountExists(
     FirebaseAuthException e,
     BuildContext? context,
   ) async {
