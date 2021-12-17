@@ -1,10 +1,13 @@
 // ignore_for_file: avoid_print
 
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -44,8 +47,10 @@ class LoginHelper {
     return isSuccess;
   }
 
-  Future<bool> signInWithGoogle(
-      {bool handlingAccountExistsWithDifferentCredentialError = true}) async {
+  Future<bool> signInWithGoogle({
+    bool handlingAccountExistsWithDifferentCredentialError = true,
+    BuildContext? context,
+  }) async {
     try {
       // Trigger the authentication flow
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
@@ -72,7 +77,7 @@ class LoginHelper {
         return false;
       }
       if (e.code == 'account-exists-with-different-credential') {
-        return await accountExists(e);
+        return await accountExists(e, context);
       } else {
         return false;
       }
@@ -83,8 +88,10 @@ class LoginHelper {
     }
   }
 
-  Future<bool> signInWithFacebook(
-      {bool handlingAccountExistsWithDifferentCredentialError = true}) async {
+  Future<bool> signInWithFacebook({
+    bool handlingAccountExistsWithDifferentCredentialError = true,
+    BuildContext? context,
+  }) async {
     try {
       // Trigger the sign-in flow
       final LoginResult loginResult = await FacebookAuth.instance.login();
@@ -107,7 +114,7 @@ class LoginHelper {
         return false;
       }
       if (e.code == 'account-exists-with-different-credential') {
-        return await accountExists(e);
+        return await accountExists(e, context);
       } else {
         return false;
       }
@@ -135,8 +142,10 @@ class LoginHelper {
     return digest.toString();
   }
 
-  Future<bool> signInWithApple(
-      {bool handlingAccountExistsWithDifferentCredentialError = true}) async {
+  Future<bool> signInWithApple({
+    bool handlingAccountExistsWithDifferentCredentialError = true,
+    BuildContext? context,
+  }) async {
     // To prevent replay attacks with the credential returned from Apple, we
     // include a nonce in the credential request. When signing in with
     // Firebase, the nonce in the id token returned by Apple, is expected to
@@ -172,7 +181,7 @@ class LoginHelper {
         return false;
       }
       if (e.code == 'account-exists-with-different-credential') {
-        return await accountExists(e);
+        return await accountExists(e, context);
       } else {
         return false;
       }
@@ -183,7 +192,10 @@ class LoginHelper {
     }
   }
 
-  Future<bool> accountExists(FirebaseAuthException e) async {
+  Future<bool> accountExists(
+    FirebaseAuthException e,
+    BuildContext? context,
+  ) async {
     if (e.email == null || e.credential == null) {
       print('email or credential is missing');
       return false;
@@ -197,6 +209,9 @@ class LoginHelper {
         await auth.fetchSignInMethodsForEmail(email);
 
     if (userSignInMethods.first == 'facebook.com') {
+      if (context != null) {
+        _showErrorHint(context, 'Facebook');
+      }
       bool isSuccess = await signInWithFacebook();
       if (!isSuccess) return false;
 
@@ -205,6 +220,9 @@ class LoginHelper {
           await userCredential.user!.linkWithCredential(pendingCredential);
       return true;
     } else if (userSignInMethods.first == 'apple.com') {
+      if (context != null) {
+        _showErrorHint(context, 'Apple');
+      }
       bool isSuccess = await signInWithApple();
       if (!isSuccess) return false;
 
@@ -213,6 +231,9 @@ class LoginHelper {
           await userCredential.user!.linkWithCredential(pendingCredential);
       return true;
     } else if (userSignInMethods.first == 'google.com') {
+      if (context != null) {
+        _showErrorHint(context, 'Google');
+      }
       bool isSuccess = await signInWithGoogle();
       if (!isSuccess) return false;
 
@@ -229,4 +250,42 @@ class LoginHelper {
   bool get isNewUser => userCredential.additionalUserInfo!.isNewUser;
 
   dynamic get signinError => error;
+
+  void _showErrorHint(BuildContext context, String loginType) {
+    if (Platform.isIOS) {
+      showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          return CupertinoAlertDialog(
+            title: Text('曾使用$loginType登入'),
+            content: Text(
+                '由於此Email曾使用$loginType登入，故麻煩您接下來先以$loginType登入以連結帳戶\n連結成功後未來即可使用此登入方式'),
+            actions: [
+              CupertinoDialogAction(
+                child: const Text('確定'),
+                onPressed: () => Navigator.of(context).pop(),
+              )
+            ],
+          );
+        },
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('曾使用$loginType登入'),
+            content: Text(
+                '由於此Email曾使用$loginType登入，故麻煩您接下來先以$loginType登入以連結帳戶\n連結成功後未來即可使用此登入方式'),
+            actions: [
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('確定'),
+              )
+            ],
+          );
+        },
+      );
+    }
+  }
 }
