@@ -279,7 +279,7 @@ class LoginHelper {
 
     if (userSignInMethods.first == 'facebook.com') {
       if (context != null) {
-        _showErrorHint(context, 'Facebook', email);
+        await _showErrorHint(context, 'Facebook', email);
       }
       bool isSuccess = await signInWithFacebook();
       if (!isSuccess) return false;
@@ -290,7 +290,7 @@ class LoginHelper {
       return true;
     } else if (userSignInMethods.first == 'apple.com') {
       if (context != null) {
-        _showErrorHint(context, 'Apple', email);
+        await _showErrorHint(context, 'Apple', email);
       }
       bool isSuccess = await signInWithApple();
       if (!isSuccess) return false;
@@ -301,7 +301,7 @@ class LoginHelper {
       return true;
     } else if (userSignInMethods.first == 'google.com') {
       if (context != null) {
-        _showErrorHint(context, 'Google', email);
+        await _showErrorHint(context, 'Google', email);
       }
       bool isSuccess = await signInWithGoogle();
       if (!isSuccess) return false;
@@ -335,12 +335,12 @@ class LoginHelper {
 
   dynamic get signinError => error;
 
-  void _showErrorHint(BuildContext context, String loginType, String email) {
+  _showErrorHint(BuildContext context, String loginType, String email) async {
     String title = '曾使用$loginType登入';
     String message =
         '由於$email曾使用$loginType登入，故麻煩您接下來先以$loginType登入$email以連結帳戶\n\n連結成功後未來即可使用此登入方式';
     if (Platform.isIOS) {
-      showCupertinoDialog(
+      await showCupertinoDialog(
         context: context,
         builder: (context) {
           return CupertinoAlertDialog(
@@ -356,7 +356,7 @@ class LoginHelper {
         },
       );
     } else {
-      showDialog(
+      await showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
