@@ -62,10 +62,10 @@ Widget LoginButton(
 // LoginType is required, others are optional
 type: LoginType
 
-//Do after login success
+// Do after login success
 onSuccess: Function(bool isNewUser)?
 
-//Do after login failed
+// Do after login failed
 onFailed: ValueSetter<dynamic error>? 
 
 // Pass the String if you want to customize the button text
@@ -100,6 +100,8 @@ There are 4 main usage.
 
 All of them are Future and will return a boolean that indicates whether or not the user is log in (or create) successfully.
 
+<br />
+
 ### 1. Send a email with link for passwordless login:
 ```dart
 Future<bool> signInWithEmailAndLink(String email, String link)
@@ -110,6 +112,7 @@ email is the email address that will be sent to, link is the user will be redire
 
 **Notice 2: If you want to use this sign in method, you need to open passwordless sign in in firebase console.**
 
+<br />
 
 ### 2. Third party sign in:
 
@@ -119,30 +122,30 @@ They have same optional named parameter, handlingAccountExistsWithDifferentCrede
 
 - handlingAccountExistsWithDifferentCredentialError: Decide whether or not handle account-exists-with-different-credential error, default is true.
 - context: It's for show the hint dialog when account-exists-with-different-credential error happened, when it is null, dialog will not be shown.
+<br />
 
-
-- signInWithGoogle
+signInWithGoogle:
 ```dart
 Future<bool> signInWithGoogle({
   bool handlingAccountExistsWithDifferentCredentialError = true,
   BuildContext? context,
 })
 ```
-- signInWithFacebook:
+signInWithFacebook:
 ```dart
 Future<bool> signInWithFacebook({
   bool handlingAccountExistsWithDifferentCredentialError = true,
   BuildContext? context,
 })
 ```
-- signInWithApple:
+signInWithApple:
 ```dart
 Future<bool> signInWithApple({
   bool handlingAccountExistsWithDifferentCredentialError = true,
   BuildContext? context,
 })
 ```
-
+<br />
 
 ### 3. Email and password sign in:
 
@@ -164,6 +167,7 @@ Future<bool> signInWithEmailAndPassword(
 })
 ```
 
+<br />
 
 ### 4. Create new user with email and password:
 
@@ -180,7 +184,7 @@ Future<bool> createUserWithEmailAndPassword(
   BuildContext? context,
 })
 ```
-
+<br />
 
 ### Others:
 
