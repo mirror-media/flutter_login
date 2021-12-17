@@ -336,14 +336,16 @@ class LoginHelper {
   dynamic get signinError => error;
 
   void _showErrorHint(BuildContext context, String loginType, String email) {
+    String title = '曾使用$loginType登入';
+    String message =
+        '由於$email曾使用$loginType登入，故麻煩您接下來先以$loginType登入$email以連結帳戶\n\n連結成功後未來即可使用此登入方式';
     if (Platform.isIOS) {
       showCupertinoDialog(
         context: context,
         builder: (context) {
           return CupertinoAlertDialog(
-            title: Text('曾使用$loginType登入'),
-            content: Text(
-                '由於$email曾使用$loginType登入，故麻煩您接下來先以$loginType登入$email以連結帳戶\n連結成功後未來即可使用此登入方式'),
+            title: Text(title),
+            content: Text(message),
             actions: [
               CupertinoDialogAction(
                 child: const Text('確定'),
@@ -358,11 +360,10 @@ class LoginHelper {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('曾使用$loginType登入'),
-            content: Text(
-                '由於此Email曾使用$loginType登入，故麻煩您接下來先以$loginType登入以連結帳戶\n連結成功後未來即可使用此登入方式'),
+            title: Text(title),
+            content: Text(message),
             actions: [
-              ElevatedButton(
+              TextButton(
                 onPressed: () => Navigator.of(context).pop(),
                 child: const Text('確定'),
               )
