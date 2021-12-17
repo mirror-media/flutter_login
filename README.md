@@ -58,7 +58,7 @@ enum LoginType {
 A prebuild button widget for each LoginType.
 
 ```dart
-Widget LoginButton(
+Widget LoginButton({
 // LoginType is required, others are optional
 type: LoginType
 
@@ -66,7 +66,7 @@ type: LoginType
 onSuccess: Function(bool isNewUser)?
 
 // Do after login failed
-onFailed: ValueSetter<dynamic error>? 
+onFailed: Function(dynamic error)? 
 
 // Pass the String if you want to customize the button text
 buttonText: String?
@@ -91,7 +91,7 @@ loadingAnimationColor: Color
 
 // Whether or not handle account-exists-with-different-credential error, default is true
 handlingAccountExistsWithDifferentCredentialError: bool
-);
+});
 ```
 
 ## class LoginHelper:
