@@ -35,7 +35,7 @@ flutter_login:
     git:
       url: https://github.com/mirror-media/flutter_login.git
       ref: main
-      version: ^0.0.1
+      version: ^0.0.3
 ```
 
 2. Import library by adding the following line to where you want to use button or helper.
