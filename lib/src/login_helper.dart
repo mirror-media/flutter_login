@@ -44,7 +44,8 @@ class LoginHelper {
     return isSuccess;
   }
 
-  Future<bool> signInWithGoogle() async {
+  Future<bool> signInWithGoogle(
+      {bool handlingAccountExistsWithDifferentCredentialError = true}) async {
     try {
       // Trigger the authentication flow
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
@@ -67,6 +68,9 @@ class LoginHelper {
       error = e;
       print('SignInWithGoogle failed error code: ${e.code}');
       print(e.message);
+      if (!handlingAccountExistsWithDifferentCredentialError) {
+        return false;
+      }
       if (e.code == 'account-exists-with-different-credential') {
         return await accountExists(e);
       } else {
@@ -79,7 +83,8 @@ class LoginHelper {
     }
   }
 
-  Future<bool> signInWithFacebook() async {
+  Future<bool> signInWithFacebook(
+      {bool handlingAccountExistsWithDifferentCredentialError = true}) async {
     try {
       // Trigger the sign-in flow
       final LoginResult loginResult = await FacebookAuth.instance.login();
@@ -98,6 +103,9 @@ class LoginHelper {
       error = e;
       print('SignInWithFacebook failed error code: ${e.code}');
       print(e.message);
+      if (!handlingAccountExistsWithDifferentCredentialError) {
+        return false;
+      }
       if (e.code == 'account-exists-with-different-credential') {
         return await accountExists(e);
       } else {
@@ -127,7 +135,8 @@ class LoginHelper {
     return digest.toString();
   }
 
-  Future<bool> signInWithApple() async {
+  Future<bool> signInWithApple(
+      {bool handlingAccountExistsWithDifferentCredentialError = true}) async {
     // To prevent replay attacks with the credential returned from Apple, we
     // include a nonce in the credential request. When signing in with
     // Firebase, the nonce in the id token returned by Apple, is expected to
@@ -159,6 +168,9 @@ class LoginHelper {
       error = e;
       print('signInWithApple failed error code: ${e.code}');
       print(e.message);
+      if (!handlingAccountExistsWithDifferentCredentialError) {
+        return false;
+      }
       if (e.code == 'account-exists-with-different-credential') {
         return await accountExists(e);
       } else {

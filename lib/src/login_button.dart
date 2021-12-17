@@ -22,6 +22,7 @@ class LoginButton extends StatefulWidget {
   final Color buttonBackgroundColor;
   final Color buttonBorderColor;
   final Color loadingAnimationColor;
+  final bool handlingAccountExistsWithDifferentCredentialError;
   const LoginButton({
     Key? key,
     required this.type,
@@ -34,6 +35,7 @@ class LoginButton extends StatefulWidget {
     this.buttonBackgroundColor = Colors.white,
     this.buttonBorderColor = Colors.black,
     this.loadingAnimationColor = Colors.black12,
+    this.handlingAccountExistsWithDifferentCredentialError = true,
   }) : super(key: key);
 
   @override
@@ -91,11 +93,20 @@ class _LoginButtonState extends State<LoginButton> {
         });
         bool isSuccess;
         if (widget.type == LoginType.apple) {
-          isSuccess = await _loginHelper.signInWithApple();
+          isSuccess = await _loginHelper.signInWithApple(
+            handlingAccountExistsWithDifferentCredentialError:
+                widget.handlingAccountExistsWithDifferentCredentialError,
+          );
         } else if (widget.type == LoginType.facebook) {
-          isSuccess = await _loginHelper.signInWithFacebook();
+          isSuccess = await _loginHelper.signInWithFacebook(
+            handlingAccountExistsWithDifferentCredentialError:
+                widget.handlingAccountExistsWithDifferentCredentialError,
+          );
         } else {
-          isSuccess = await _loginHelper.signInWithGoogle();
+          isSuccess = await _loginHelper.signInWithGoogle(
+            handlingAccountExistsWithDifferentCredentialError:
+                widget.handlingAccountExistsWithDifferentCredentialError,
+          );
         }
 
         if (isSuccess && widget.onSuccess != null) {
