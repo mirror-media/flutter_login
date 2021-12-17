@@ -107,6 +107,7 @@ email is the email address that will be sent to, link is the user will be redire
 
 **Notice 2: If you want to use this sign in method, you need to open passwordless sign in in firebase console.**
 
+
 2. Third party sign in:
 
 Now support Google, Facebook, and Apple.
@@ -139,6 +140,7 @@ Future<bool> signInWithApple({
 })
 ```
 
+
 3. Email and password sign in:
 
 There are two parameter: email and password. And three optional named parameters:  ifNotExistsCreateUser, askAgain, context.
@@ -159,6 +161,7 @@ Future<bool> signInWithEmailAndPassword(
 })
 ```
 
+
 4. Create new user with email and password:
 
 There are two parameter: email and password. And two optional named parameters:  ifExistsTrySignIn, context.
@@ -175,6 +178,7 @@ Future<bool> createUserWithEmailAndPassword(
 })
 ```
 
+
 Others:
 
 It has two getter, isNewUser and signinError.
@@ -182,6 +186,7 @@ It has two getter, isNewUser and signinError.
 - isNewUser: It will return a boolean indicating whether user is new.
 
 **Notice: Only use after signIn successfully, or may get error**
+
 
 - signinError: It will return dynamic that previous sign in method catch error.
 
