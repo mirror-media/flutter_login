@@ -380,68 +380,106 @@ class LoginHelper {
     bool isTryAgain = false,
   }) async {
     String? password;
-    String title = '曾使用帳號密碼登入';
+    String title = '曾使用Email與密碼登入';
     String content =
-        '由於$email曾使用帳號密碼登入，故麻煩您輸入密碼登入$email以連結帳戶\n連結成功後未來即可使用此登入方式';
+        '由於$email曾使用Email與密碼登入，故麻煩您輸入密碼登入$email以連結帳戶\n\n連結成功後未來即可使用此登入方式';
     if (isTryAgain) {
       title = '密碼錯誤';
-      content = '密碼錯誤，請重新輸入';
+      content = '請重新輸入密碼';
     }
-    Widget textField = TextField(
-      obscureText: true,
-      enableSuggestions: false,
-      autocorrect: false,
-      autofocus: true,
-      onChanged: (value) {
-        password = value;
-      },
-      decoration: const InputDecoration(hintText: "請輸入密碼"),
-    );
     if (Platform.isIOS) {
-      showCupertinoDialog(
+      await showCupertinoDialog(
         context: context,
         builder: (context) {
-          return CupertinoAlertDialog(
-            title: Text(title),
-            content: Column(
-              children: [
-                Text(content),
-                textField,
-              ],
-            ),
-            actions: [
-              CupertinoDialogAction(
-                child: const Text('確定'),
-                onPressed: () => Navigator.of(context).pop(),
+          return StatefulBuilder(builder: (context, setState) {
+            return CupertinoAlertDialog(
+              title: Text(title),
+              content: Column(
+                children: [
+                  Text(content),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  CupertinoTextField(
+                    obscureText: true,
+                    enableSuggestions: false,
+                    autocorrect: false,
+                    autofocus: true,
+                    onChanged: (value) {
+                      setState(() {
+                        password = value;
+                        if (password == '' || password == ' ') {
+                          password = null;
+                        }
+                      });
+                    },
+                    placeholder: "請輸入密碼",
+                  ),
+                ],
               ),
-              CupertinoDialogAction(
-                child: const Text('取消'),
-                isDestructiveAction: true,
-                onPressed: () => Navigator.of(context).pop(),
-              )
-            ],
-          );
+              actions: [
+                CupertinoDialogAction(
+                  child: const Text('取消'),
+                  isDestructiveAction: true,
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+                CupertinoDialogAction(
+                  child: const Text('確定'),
+                  onPressed: password == null
+                      ? null
+                      : () => Navigator.of(context).pop(),
+                ),
+              ],
+            );
+          });
         },
       );
     } else {
-      showDialog(
+      await showDialog(
         context: context,
         builder: (context) {
-          return AlertDialog(
-            title: Text(title),
-            content: Column(
-              children: [
-                Text(content),
-                textField,
+          return StatefulBuilder(builder: (context, setState) {
+            return AlertDialog(
+              title: Text(title),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(content),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  TextField(
+                    obscureText: true,
+                    enableSuggestions: false,
+                    autocorrect: false,
+                    autofocus: true,
+                    onChanged: (value) {
+                      setState(() {
+                        password = value;
+                        if (password == '' || password == ' ') {
+                          password = null;
+                        }
+                      });
+                    },
+                    decoration: const InputDecoration(hintText: "請輸入密碼"),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('取消'),
+                  style: TextButton.styleFrom(primary: Colors.red),
+                ),
+                TextButton(
+                  onPressed: password == null
+                      ? null
+                      : () => Navigator.of(context).pop(),
+                  child: const Text('確定'),
+                ),
               ],
-            ),
-            actions: [
-              ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('確定'),
-              )
-            ],
-          );
+            );
+          });
         },
       );
     }
