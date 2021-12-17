@@ -14,7 +14,7 @@ enum LoginType {
 class LoginButton extends StatefulWidget {
   final LoginType type;
   final ValueSetter<bool>? onSuccess;
-  final Function()? onFailed;
+  final ValueSetter<dynamic>? onFailed;
   final double textSize;
   final Color textColor;
   final bool showIcon;
@@ -95,7 +95,7 @@ class _LoginButtonState extends State<LoginButton> {
         if (isSuccess && widget.onSuccess != null) {
           widget.onSuccess!(_loginHelper.isNewUser);
         } else if (!isSuccess && widget.onFailed != null) {
-          widget.onFailed!();
+          widget.onFailed!(_loginHelper.signinError);
         }
         setState(() {
           _isLoading = false;

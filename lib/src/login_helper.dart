@@ -14,6 +14,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 class LoginHelper {
   final FirebaseAuth auth = FirebaseAuth.instance;
   late UserCredential userCredential;
+  dynamic error;
 
   Future<bool> signInWithEmailAndLink(String email, String link) async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
@@ -63,6 +64,7 @@ class LoginHelper {
 
       return true;
     } on FirebaseAuthException catch (e) {
+      error = e;
       print('SignInWithGoogle failed error code: ${e.code}');
       print(e.message);
       if (e.code == 'account-exists-with-different-credential') {
@@ -71,6 +73,7 @@ class LoginHelper {
         return false;
       }
     } catch (e) {
+      error = e;
       print('SignInWithGoogle failed: ${e.toString()}');
       return false;
     }
@@ -92,6 +95,7 @@ class LoginHelper {
         return false;
       }
     } on FirebaseAuthException catch (e) {
+      error = e;
       print('SignInWithFacebook failed error code: ${e.code}');
       print(e.message);
       if (e.code == 'account-exists-with-different-credential') {
@@ -100,6 +104,7 @@ class LoginHelper {
         return false;
       }
     } catch (e) {
+      error = e;
       print('SignInWithFacebook failed: ${e.toString()}');
       return false;
     }
@@ -151,6 +156,7 @@ class LoginHelper {
       userCredential = await auth.signInWithCredential(oauthCredential);
       return true;
     } on FirebaseAuthException catch (e) {
+      error = e;
       print('signInWithApple failed error code: ${e.code}');
       print(e.message);
       if (e.code == 'account-exists-with-different-credential') {
@@ -159,6 +165,7 @@ class LoginHelper {
         return false;
       }
     } catch (e) {
+      error = e;
       print('signInWithApple failed: ${e.toString()}');
       return false;
     }
@@ -208,4 +215,6 @@ class LoginHelper {
   }
 
   bool get isNewUser => userCredential.additionalUserInfo!.isNewUser;
+
+  dynamic get signinError => error;
 }
