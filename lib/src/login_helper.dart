@@ -295,7 +295,14 @@ class LoginHelper {
       print('no sign in method already exists');
     }
     if (isSuccess) {
-      userCredential.user!.updatePassword(password);
+      try {
+        userCredential.user!.updatePassword(password);
+      } on FirebaseAuthException catch (e) {
+        error = e;
+        if (e.code == 'weak-password') {
+          print('The password provided is too weak.');
+        }
+      }
     }
     return isSuccess;
   }
