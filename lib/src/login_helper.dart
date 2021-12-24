@@ -318,6 +318,7 @@ class LoginHelper {
             email,
             newPassword,
             context: context,
+            askAgain: true,
           );
           if (!isSuccess) return false;
           userCredential =
