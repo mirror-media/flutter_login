@@ -236,8 +236,17 @@ class LoginHelper {
           );
         }
       } else if (e.code == 'wrong-password') {
-        print('Wrong password provided for that user.');
-        if (askAgain && context != null) {
+        List<String> userSignInMethods =
+            await auth.fetchSignInMethodsForEmail(email);
+        if (userSignInMethods.isNotEmpty) {
+          return await _updateAccountPassword(
+            email,
+            password,
+            context,
+            userSignInMethods,
+          );
+        } else if (askAgain && context != null) {
+          print('Wrong password provided for that user.');
           String? newPassword = await _askUserKeyPassword(
             context,
             email,
@@ -254,11 +263,41 @@ class LoginHelper {
             );
           }
         }
-      } else if (e.code == 'account-exists-with-different-credential') {
-        return await _accountExists(e, context);
       }
       return false;
     }
+  }
+
+  Future<bool> _updateAccountPassword(
+    String email,
+    String password,
+    BuildContext? context,
+    List<String> userSignInMethods,
+  ) async {
+    bool isSuccess = false;
+
+    if (userSignInMethods.first == 'facebook.com') {
+      if (context != null) {
+        await _showErrorHint(context, 'Facebook', email);
+      }
+      isSuccess = await signInWithFacebook();
+    } else if (userSignInMethods.first == 'apple.com') {
+      if (context != null) {
+        await _showErrorHint(context, 'Apple', email);
+      }
+      isSuccess = await signInWithApple();
+    } else if (userSignInMethods.first == 'google.com') {
+      if (context != null) {
+        await _showErrorHint(context, 'Google', email);
+      }
+      isSuccess = await signInWithGoogle();
+    } else {
+      print('no sign in method already exists');
+    }
+    if (isSuccess) {
+      userCredential.user!.updatePassword(password);
+    }
+    return isSuccess;
   }
 
   Future<bool> _accountExists(
@@ -276,60 +315,44 @@ class LoginHelper {
     // Fetch a list of what sign-in methods exist for the conflicting user
     List<String> userSignInMethods =
         await auth.fetchSignInMethodsForEmail(email);
+    bool isSuccess = false;
 
     if (userSignInMethods.first == 'facebook.com') {
       if (context != null) {
         await _showErrorHint(context, 'Facebook', email);
       }
-      bool isSuccess = await signInWithFacebook();
-      if (!isSuccess) return false;
-
-      // Link the pending credential with the existing account
-      userCredential =
-          await userCredential.user!.linkWithCredential(pendingCredential);
-      return true;
+      isSuccess = await signInWithFacebook();
     } else if (userSignInMethods.first == 'apple.com') {
       if (context != null) {
         await _showErrorHint(context, 'Apple', email);
       }
-      bool isSuccess = await signInWithApple();
-      if (!isSuccess) return false;
-
-      // Link the pending credential with the existing account
-      userCredential =
-          await userCredential.user!.linkWithCredential(pendingCredential);
-      return true;
+      isSuccess = await signInWithApple();
     } else if (userSignInMethods.first == 'google.com') {
       if (context != null) {
         await _showErrorHint(context, 'Google', email);
       }
-      bool isSuccess = await signInWithGoogle();
-      if (!isSuccess) return false;
-
-      // Link the pending credential with the existing account
-      userCredential =
-          await userCredential.user!.linkWithCredential(pendingCredential);
-      return true;
+      isSuccess = await signInWithGoogle();
     } else if (userSignInMethods.first == 'password') {
       if (context != null) {
         String? newPassword = await _askUserKeyPassword(context, email);
         if (newPassword != null) {
-          bool isSuccess = await signInWithEmailAndPassword(
+          isSuccess = await signInWithEmailAndPassword(
             email,
             newPassword,
             context: context,
             askAgain: true,
           );
-          if (!isSuccess) return false;
-          userCredential =
-              await userCredential.user!.linkWithCredential(pendingCredential);
-          return true;
         }
       }
     } else {
-      print('other sign in method already exists');
+      print('no sign in method already exists');
     }
-    return false;
+    if (isSuccess) {
+      // Link the pending credential with the existing account
+      userCredential =
+          await userCredential.user!.linkWithCredential(pendingCredential);
+    }
+    return isSuccess;
   }
 
   bool get isNewUser => userCredential.additionalUserInfo!.isNewUser;
