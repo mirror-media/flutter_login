@@ -238,7 +238,8 @@ class LoginHelper {
       } else if (e.code == 'wrong-password') {
         List<String> userSignInMethods =
             await auth.fetchSignInMethodsForEmail(email);
-        if (userSignInMethods.isNotEmpty) {
+        if (userSignInMethods.isNotEmpty &&
+            !userSignInMethods.contains('password')) {
           return await _updateAccountPassword(
             email,
             password,
