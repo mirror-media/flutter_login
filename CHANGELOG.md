@@ -1,3 +1,10 @@
+## 0.0.4
+
+- Add example app connect to MirrorMedia App Dev firebase.
+- Handle error when user want login that email is existed but no password.
+- Ask user key password again when linking existed email.
+
+
 ## 0.0.3
 
 - Parameter onFailed of LoginButton now will pass the error into function.

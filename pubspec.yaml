@@ -1,6 +1,6 @@
 name: flutter_login
 description: A Flutter package project help use firebase login.
-version: 0.0.3
+version: 0.0.4
 homepage:
 
 environment:
