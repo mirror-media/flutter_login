@@ -279,17 +279,32 @@ class LoginHelper {
 
     if (userSignInMethods.first == 'facebook.com') {
       if (context != null) {
-        await _showErrorHint(context, 'Facebook', email);
+        await _showErrorHint(
+          context,
+          'Facebook',
+          email,
+          isUpdatePassword: true,
+        );
       }
       isSuccess = await signInWithFacebook();
     } else if (userSignInMethods.first == 'apple.com') {
       if (context != null) {
-        await _showErrorHint(context, 'Apple', email);
+        await _showErrorHint(
+          context,
+          'Apple',
+          email,
+          isUpdatePassword: true,
+        );
       }
       isSuccess = await signInWithApple();
     } else if (userSignInMethods.first == 'google.com') {
       if (context != null) {
-        await _showErrorHint(context, 'Google', email);
+        await _showErrorHint(
+          context,
+          'Google',
+          email,
+          isUpdatePassword: true,
+        );
       }
       isSuccess = await signInWithGoogle();
     } else {
@@ -367,10 +382,19 @@ class LoginHelper {
 
   dynamic get signinError => error;
 
-  _showErrorHint(BuildContext context, String loginType, String email) async {
+  _showErrorHint(
+    BuildContext context,
+    String loginType,
+    String email, {
+    bool isUpdatePassword = false,
+  }) async {
     String title = '曾使用$loginType登入';
     String message =
         '由於$email曾使用$loginType登入，故麻煩您接下來先以$loginType登入$email以連結帳戶\n\n連結成功後未來即可使用此登入方式';
+    if (isUpdatePassword) {
+      message =
+          '由於$email曾使用$loginType登入，故麻煩您接下來先以$loginType登入$email以新增密碼\n\n登入成功後未來即可使用此密碼登入';
+    }
     if (Platform.isIOS) {
       await showCupertinoDialog(
         context: context,
