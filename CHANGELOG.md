@@ -1,3 +1,8 @@
+## 0.0.5
+
+- Upgrade flutter_facebook_auth to ^4.1.1
+
+
 ## 0.0.4
 
 - Add example app connect to MirrorMedia App Dev firebase.
