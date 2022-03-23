@@ -35,7 +35,7 @@ flutter_login:
     git:
       url: https://github.com/mirror-media/flutter_login.git
       ref: main
-      version: ^0.0.3
+      version: ^0.0.6
 ```
 
 2. Import library by adding the following line to where you want to use button or helper.
@@ -52,6 +52,14 @@ enum LoginType {
   apple,
 }
 ```
+## Login Status:
+```dart
+enum FirebaseLoginStatus {
+  cancel,
+  success,
+  error,
+}
+```
 
 ## class LoginButton:
 
@@ -62,11 +70,8 @@ Widget LoginButton({
 // LoginType is required, others are optional
 type: LoginType
 
-// Do after login success
-onSuccess: Function(bool isNewUser)?
-
-// Do after login failed
-onFailed: Function(dynamic error)? 
+// Do after login
+onFinished: Function(FirebaseLoginStatus result)? 
 
 // Pass the String if you want to customize the button text
 buttonText: String?
@@ -126,21 +131,21 @@ They have same optional named parameter, handlingAccountExistsWithDifferentCrede
 
 signInWithGoogle:
 ```dart
-Future<bool> signInWithGoogle({
+Future<FirebaseLoginStatus> signInWithGoogle({
   bool handlingAccountExistsWithDifferentCredentialError = true,
   BuildContext? context,
 })
 ```
 signInWithFacebook:
 ```dart
-Future<bool> signInWithFacebook({
+Future<FirebaseLoginStatus> signInWithFacebook({
   bool handlingAccountExistsWithDifferentCredentialError = true,
   BuildContext? context,
 })
 ```
 signInWithApple:
 ```dart
-Future<bool> signInWithApple({
+Future<FirebaseLoginStatus> signInWithApple({
   bool handlingAccountExistsWithDifferentCredentialError = true,
   BuildContext? context,
 })
@@ -158,7 +163,7 @@ There are two parameter: email and password. And three optional named parameters
 - context: BuildContext for show dialog.
 
 ```dart
-Future<bool> signInWithEmailAndPassword(
+Future<FirebaseLoginStatus> signInWithEmailAndPassword(
   String email,
   String password, {
   bool ifNotExistsCreateUser = true,
@@ -177,7 +182,7 @@ There are two parameter: email and password. And two optional named parameters: 
 - context: BuildContext for show dialog, only use for signInWithEmailAndPassword() when ifExistsTrySignIn is true.
 
 ```dart
-Future<bool> createUserWithEmailAndPassword(
+Future<FirebaseLoginStatus> createUserWithEmailAndPassword(
   String email,
   String password, {
   bool ifExistsTrySignIn = true,
