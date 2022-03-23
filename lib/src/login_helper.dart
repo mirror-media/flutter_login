@@ -22,6 +22,7 @@ enum FirebaseLoginStatus {
 class LoginHelper {
   final FirebaseAuth auth = FirebaseAuth.instance;
   late UserCredential userCredential;
+  bool isNewUser = false;
   dynamic error;
 
   Future<bool> signInWithEmailAndLink(String email, String link) async {
@@ -76,6 +77,7 @@ class LoginHelper {
 
       // Once signed in, return the UserCredential
       userCredential = await auth.signInWithCredential(credential);
+      isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
 
       return FirebaseLoginStatus.success;
     } on FirebaseAuthException catch (e) {
@@ -111,6 +113,7 @@ class LoginHelper {
             FacebookAuthProvider.credential(loginResult.accessToken!.token);
         // Once signed in, return the UserCredential
         userCredential = await auth.signInWithCredential(credential);
+        isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
         return FirebaseLoginStatus.success;
       } else if (loginResult.status == LoginStatus.cancelled) {
         return FirebaseLoginStatus.cancel;
@@ -173,6 +176,7 @@ class LoginHelper {
       // Sign in the user with Firebase. If the nonce we generated earlier does
       // not match the nonce in `appleCredential.identityToken`, sign in will fail.
       userCredential = await auth.signInWithCredential(oauthCredential);
+      isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
       return FirebaseLoginStatus.success;
     } on FirebaseAuthException catch (e) {
       error = e;
@@ -207,6 +211,7 @@ class LoginHelper {
     try {
       userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
+      isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
       return FirebaseLoginStatus.success;
     } on FirebaseAuthException catch (e) {
       error = e;
@@ -240,6 +245,7 @@ class LoginHelper {
     try {
       userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
+      isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
       return FirebaseLoginStatus.success;
     } on FirebaseAuthException catch (e) {
       error = e;
@@ -394,11 +400,10 @@ class LoginHelper {
       // Link the pending credential with the existing account
       userCredential =
           await userCredential.user!.linkWithCredential(pendingCredential);
+      isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
     }
     return result;
   }
-
-  bool get isNewUser => userCredential.additionalUserInfo!.isNewUser;
 
   dynamic get signinError => error;
 
