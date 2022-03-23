@@ -13,6 +13,12 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
+enum FirebaseLoginStatus {
+  cancel,
+  success,
+  error,
+}
+
 class LoginHelper {
   final FirebaseAuth auth = FirebaseAuth.instance;
   late UserCredential userCredential;
@@ -46,7 +52,7 @@ class LoginHelper {
     return isSuccess;
   }
 
-  Future<bool> signInWithGoogle({
+  Future<FirebaseLoginStatus> signInWithGoogle({
     bool handlingAccountExistsWithDifferentCredentialError = true,
     BuildContext? context,
   }) async {
@@ -54,40 +60,44 @@ class LoginHelper {
       // Trigger the authentication flow
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
+      if (googleUser == null) {
+        return FirebaseLoginStatus.cancel;
+      }
+
       // Obtain the auth details from the request
-      final GoogleSignInAuthentication? googleAuth =
-          await googleUser?.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
 
       // Create a new credential
       final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth?.accessToken,
-        idToken: googleAuth?.idToken,
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
       );
 
       // Once signed in, return the UserCredential
       userCredential = await auth.signInWithCredential(credential);
 
-      return true;
+      return FirebaseLoginStatus.success;
     } on FirebaseAuthException catch (e) {
       error = e;
       print('SignInWithGoogle failed error code: ${e.code}');
       print(e.message);
       if (!handlingAccountExistsWithDifferentCredentialError) {
-        return false;
+        return FirebaseLoginStatus.error;
       }
       if (e.code == 'account-exists-with-different-credential') {
         return await _accountExists(e, context);
       } else {
-        return false;
+        return FirebaseLoginStatus.error;
       }
     } catch (e) {
       error = e;
       print('SignInWithGoogle failed: ${e.toString()}');
-      return false;
+      return FirebaseLoginStatus.error;
     }
   }
 
-  Future<bool> signInWithFacebook({
+  Future<FirebaseLoginStatus> signInWithFacebook({
     bool handlingAccountExistsWithDifferentCredentialError = true,
     BuildContext? context,
   }) async {
@@ -101,26 +111,28 @@ class LoginHelper {
             FacebookAuthProvider.credential(loginResult.accessToken!.token);
         // Once signed in, return the UserCredential
         userCredential = await auth.signInWithCredential(credential);
-        return true;
+        return FirebaseLoginStatus.success;
+      } else if (loginResult.status == LoginStatus.cancelled) {
+        return FirebaseLoginStatus.cancel;
       } else {
-        return false;
+        return FirebaseLoginStatus.error;
       }
     } on FirebaseAuthException catch (e) {
       error = e;
       print('SignInWithFacebook failed error code: ${e.code}');
       print(e.message);
       if (!handlingAccountExistsWithDifferentCredentialError) {
-        return false;
+        return FirebaseLoginStatus.error;
       }
       if (e.code == 'account-exists-with-different-credential') {
         return await _accountExists(e, context);
       } else {
-        return false;
+        return FirebaseLoginStatus.error;
       }
     } catch (e) {
       error = e;
       print('SignInWithFacebook failed: ${e.toString()}');
-      return false;
+      return FirebaseLoginStatus.error;
     }
   }
 
@@ -131,7 +143,7 @@ class LoginHelper {
     return digest.toString();
   }
 
-  Future<bool> signInWithApple({
+  Future<FirebaseLoginStatus> signInWithApple({
     bool handlingAccountExistsWithDifferentCredentialError = true,
     BuildContext? context,
   }) async {
@@ -161,27 +173,32 @@ class LoginHelper {
       // Sign in the user with Firebase. If the nonce we generated earlier does
       // not match the nonce in `appleCredential.identityToken`, sign in will fail.
       userCredential = await auth.signInWithCredential(oauthCredential);
-      return true;
+      return FirebaseLoginStatus.success;
     } on FirebaseAuthException catch (e) {
       error = e;
       print('signInWithApple failed error code: ${e.code}');
       print(e.message);
       if (!handlingAccountExistsWithDifferentCredentialError) {
-        return false;
+        return FirebaseLoginStatus.error;
       }
       if (e.code == 'account-exists-with-different-credential') {
         return await _accountExists(e, context);
       } else {
-        return false;
+        return FirebaseLoginStatus.error;
       }
+    } on SignInWithAppleAuthorizationException catch (e) {
+      if (e.code == AuthorizationErrorCode.canceled) {
+        return FirebaseLoginStatus.cancel;
+      }
+      return FirebaseLoginStatus.error;
     } catch (e) {
       error = e;
       print('signInWithApple failed: ${e.toString()}');
-      return false;
+      return FirebaseLoginStatus.error;
     }
   }
 
-  Future<bool> createUserWithEmailAndPassword(
+  Future<FirebaseLoginStatus> createUserWithEmailAndPassword(
     String email,
     String password, {
     bool ifExistsTrySignIn = true,
@@ -190,7 +207,7 @@ class LoginHelper {
     try {
       userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
-      return true;
+      return FirebaseLoginStatus.success;
     } on FirebaseAuthException catch (e) {
       error = e;
       if (e.code == 'weak-password') {
@@ -205,15 +222,15 @@ class LoginHelper {
           );
         }
       }
-      return false;
+      return FirebaseLoginStatus.error;
     } catch (e) {
       error = e;
       print(e);
-      return false;
+      return FirebaseLoginStatus.error;
     }
   }
 
-  Future<bool> signInWithEmailAndPassword(
+  Future<FirebaseLoginStatus> signInWithEmailAndPassword(
     String email,
     String password, {
     bool ifNotExistsCreateUser = true,
@@ -223,7 +240,7 @@ class LoginHelper {
     try {
       userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
-      return true;
+      return FirebaseLoginStatus.success;
     } on FirebaseAuthException catch (e) {
       error = e;
       if (e.code == 'user-not-found') {
@@ -254,7 +271,7 @@ class LoginHelper {
             isTryAgain: true,
           );
           if (newPassword == null) {
-            return false;
+            return FirebaseLoginStatus.cancel;
           } else {
             return await signInWithEmailAndPassword(
               email,
@@ -265,17 +282,17 @@ class LoginHelper {
           }
         }
       }
-      return false;
+      return FirebaseLoginStatus.error;
     }
   }
 
-  Future<bool> _updateAccountPassword(
+  Future<FirebaseLoginStatus> _updateAccountPassword(
     String email,
     String password,
     BuildContext? context,
     List<String> userSignInMethods,
   ) async {
-    bool isSuccess = false;
+    FirebaseLoginStatus result = FirebaseLoginStatus.error;
 
     if (userSignInMethods.first == 'facebook.com') {
       if (context != null) {
@@ -286,7 +303,8 @@ class LoginHelper {
           isUpdatePassword: true,
         );
       }
-      isSuccess = await signInWithFacebook();
+
+      result = await signInWithFacebook();
     } else if (userSignInMethods.first == 'apple.com') {
       if (context != null) {
         await _showErrorHint(
@@ -296,7 +314,7 @@ class LoginHelper {
           isUpdatePassword: true,
         );
       }
-      isSuccess = await signInWithApple();
+      result = await signInWithApple();
     } else if (userSignInMethods.first == 'google.com') {
       if (context != null) {
         await _showErrorHint(
@@ -306,11 +324,11 @@ class LoginHelper {
           isUpdatePassword: true,
         );
       }
-      isSuccess = await signInWithGoogle();
+      result = await signInWithGoogle();
     } else {
       print('no sign in method already exists');
     }
-    if (isSuccess) {
+    if (result == FirebaseLoginStatus.success) {
       try {
         userCredential.user!.updatePassword(password);
       } on FirebaseAuthException catch (e) {
@@ -318,18 +336,20 @@ class LoginHelper {
         if (e.code == 'weak-password') {
           print('The password provided is too weak.');
         }
+      } catch (e) {
+        print('Update password failed: $e');
       }
     }
-    return isSuccess;
+    return result;
   }
 
-  Future<bool> _accountExists(
+  Future<FirebaseLoginStatus> _accountExists(
     FirebaseAuthException e,
     BuildContext? context,
   ) async {
     if (e.email == null || e.credential == null) {
       print('email or credential is missing');
-      return false;
+      return FirebaseLoginStatus.error;
     }
     // The account already exists with a different credential
     String email = e.email!;
@@ -338,28 +358,28 @@ class LoginHelper {
     // Fetch a list of what sign-in methods exist for the conflicting user
     List<String> userSignInMethods =
         await auth.fetchSignInMethodsForEmail(email);
-    bool isSuccess = false;
+    FirebaseLoginStatus result = FirebaseLoginStatus.error;
 
     if (userSignInMethods.first == 'facebook.com') {
       if (context != null) {
         await _showErrorHint(context, 'Facebook', email);
       }
-      isSuccess = await signInWithFacebook();
+      result = await signInWithFacebook();
     } else if (userSignInMethods.first == 'apple.com') {
       if (context != null) {
         await _showErrorHint(context, 'Apple', email);
       }
-      isSuccess = await signInWithApple();
+      result = await signInWithApple();
     } else if (userSignInMethods.first == 'google.com') {
       if (context != null) {
         await _showErrorHint(context, 'Google', email);
       }
-      isSuccess = await signInWithGoogle();
+      result = await signInWithGoogle();
     } else if (userSignInMethods.first == 'password') {
       if (context != null) {
         String? newPassword = await _askUserKeyPassword(context, email);
         if (newPassword != null) {
-          isSuccess = await signInWithEmailAndPassword(
+          result = await signInWithEmailAndPassword(
             email,
             newPassword,
             context: context,
@@ -370,12 +390,12 @@ class LoginHelper {
     } else {
       print('no sign in method already exists');
     }
-    if (isSuccess) {
+    if (result == FirebaseLoginStatus.success) {
       // Link the pending credential with the existing account
       userCredential =
           await userCredential.user!.linkWithCredential(pendingCredential);
     }
-    return isSuccess;
+    return result;
   }
 
   bool get isNewUser => userCredential.additionalUserInfo!.isNewUser;
