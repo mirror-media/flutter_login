@@ -13,8 +13,7 @@ enum LoginType {
 
 class LoginButton extends StatefulWidget {
   final LoginType type;
-  final ValueSetter<bool>? onSuccess;
-  final ValueSetter<dynamic>? onFailed;
+  final ValueSetter<FirebaseLoginStatus>? onFinished;
   final String? buttonText;
   final double textSize;
   final Color textColor;
@@ -26,8 +25,7 @@ class LoginButton extends StatefulWidget {
   const LoginButton({
     Key? key,
     required this.type,
-    this.onSuccess,
-    this.onFailed,
+    this.onFinished,
     this.buttonText,
     this.textSize = 16,
     this.textColor = Colors.black,
@@ -91,31 +89,29 @@ class _LoginButtonState extends State<LoginButton> {
         setState(() {
           _isLoading = true;
         });
-        bool isSuccess;
+        FirebaseLoginStatus result;
         if (widget.type == LoginType.apple) {
-          isSuccess = await _loginHelper.signInWithApple(
+          result = await _loginHelper.signInWithApple(
             handlingAccountExistsWithDifferentCredentialError:
                 widget.handlingAccountExistsWithDifferentCredentialError,
             context: context,
           );
         } else if (widget.type == LoginType.facebook) {
-          isSuccess = await _loginHelper.signInWithFacebook(
+          result = await _loginHelper.signInWithFacebook(
             handlingAccountExistsWithDifferentCredentialError:
                 widget.handlingAccountExistsWithDifferentCredentialError,
             context: context,
           );
         } else {
-          isSuccess = await _loginHelper.signInWithGoogle(
+          result = await _loginHelper.signInWithGoogle(
             handlingAccountExistsWithDifferentCredentialError:
                 widget.handlingAccountExistsWithDifferentCredentialError,
             context: context,
           );
         }
 
-        if (isSuccess && widget.onSuccess != null) {
-          widget.onSuccess!(_loginHelper.isNewUser);
-        } else if (!isSuccess && widget.onFailed != null) {
-          widget.onFailed!(_loginHelper.signinError);
+        if (widget.onFinished != null) {
+          widget.onFinished!(result);
         }
         setState(() {
           _isLoading = false;
