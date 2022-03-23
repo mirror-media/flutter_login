@@ -71,7 +71,7 @@ Widget LoginButton({
 type: LoginType
 
 // Do after login
-onFinished: Function(FirebaseLoginStatus result)? 
+onFinished: Function(FirebaseLoginStatus result, bool isNewUser, dynamic error)? 
 
 // Pass the String if you want to customize the button text
 buttonText: String?
