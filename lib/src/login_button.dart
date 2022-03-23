@@ -11,9 +11,12 @@ enum LoginType {
   apple,
 }
 
+typedef LoginFinishCallback = void Function(
+    FirebaseLoginStatus status, bool isNewUser, dynamic error);
+
 class LoginButton extends StatefulWidget {
   final LoginType type;
-  final ValueSetter<FirebaseLoginStatus>? onFinished;
+  final LoginFinishCallback? onFinished;
   final String? buttonText;
   final double textSize;
   final Color textColor;
@@ -111,7 +114,11 @@ class _LoginButtonState extends State<LoginButton> {
         }
 
         if (widget.onFinished != null) {
-          widget.onFinished!(result);
+          widget.onFinished!(
+            result,
+            _loginHelper.isNewUser,
+            _loginHelper.error,
+          );
         }
         setState(() {
           _isLoading = false;
