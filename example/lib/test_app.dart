@@ -74,7 +74,7 @@ class _TestAppState extends State<TestApp> {
             ),
             LoginButton(
               type: LoginType.google,
-              onFinished: (status) {
+              onFinished: (status, isNewUser, error) {
                 if (status == FirebaseLoginStatus.success) {
                   loginStauts = auth.currentUser!.email! + '\nlog in';
                   isLoggedIn = true;
@@ -91,7 +91,7 @@ class _TestAppState extends State<TestApp> {
             ),
             LoginButton(
               type: LoginType.facebook,
-              onFinished: (status) {
+              onFinished: (status, isNewUser, error) {
                 if (status == FirebaseLoginStatus.success) {
                   loginStauts = auth.currentUser!.email! + '\nlog in';
                   isLoggedIn = true;
@@ -109,7 +109,7 @@ class _TestAppState extends State<TestApp> {
             if (Platform.isIOS)
               LoginButton(
                 type: LoginType.apple,
-                onFinished: (status) {
+                onFinished: (status, isNewUser, error) {
                   if (status == FirebaseLoginStatus.success) {
                     loginStauts = auth.currentUser!.email! + '\nlog in';
                     isLoggedIn = true;
