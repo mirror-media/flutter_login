@@ -74,19 +74,16 @@ class _TestAppState extends State<TestApp> {
             ),
             LoginButton(
               type: LoginType.google,
-              onSuccess: (isNewUser) {
-                if (auth.currentUser!.email != null) {
+              onFinished: (status) {
+                if (status == FirebaseLoginStatus.success) {
                   loginStauts = auth.currentUser!.email! + '\nlog in';
                   isLoggedIn = true;
+                } else if (status == FirebaseLoginStatus.cancel) {
+                  loginStauts = 'Login cancelled';
                 } else {
-                  loginStauts = 'No email log in';
+                  loginStauts = 'Log in failed';
                 }
                 setState(() {});
-              },
-              onFailed: (error) {
-                setState(() {
-                  loginStauts = 'Log in failed';
-                });
               },
             ),
             const SizedBox(
@@ -94,19 +91,16 @@ class _TestAppState extends State<TestApp> {
             ),
             LoginButton(
               type: LoginType.facebook,
-              onSuccess: (isNewUser) {
-                if (auth.currentUser!.email != null) {
+              onFinished: (status) {
+                if (status == FirebaseLoginStatus.success) {
                   loginStauts = auth.currentUser!.email! + '\nlog in';
                   isLoggedIn = true;
+                } else if (status == FirebaseLoginStatus.cancel) {
+                  loginStauts = 'Login cancelled';
                 } else {
-                  loginStauts = 'No email log in';
+                  loginStauts = 'Log in failed';
                 }
                 setState(() {});
-              },
-              onFailed: (error) {
-                setState(() {
-                  loginStauts = 'Log in failed';
-                });
               },
             ),
             const SizedBox(
@@ -115,19 +109,16 @@ class _TestAppState extends State<TestApp> {
             if (Platform.isIOS)
               LoginButton(
                 type: LoginType.apple,
-                onSuccess: (isNewUser) {
-                  if (auth.currentUser!.email != null) {
+                onFinished: (status) {
+                  if (status == FirebaseLoginStatus.success) {
                     loginStauts = auth.currentUser!.email! + '\nlog in';
                     isLoggedIn = true;
+                  } else if (status == FirebaseLoginStatus.cancel) {
+                    loginStauts = 'Login cancelled';
                   } else {
-                    loginStauts = 'No email log in';
+                    loginStauts = 'Log in failed';
                   }
                   setState(() {});
-                },
-                onFailed: (error) {
-                  setState(() {
-                    loginStauts = 'Log in failed';
-                  });
                 },
               ),
             const SizedBox(
@@ -155,21 +146,18 @@ class _TestAppState extends State<TestApp> {
               ElevatedButton(
                 onPressed: () async {
                   if (EmailValidator.validate(_controller1.text)) {
-                    bool isSuccess = await _loginWithEmailAndPassword(
-                        _controller1.text, _controller2.text);
-                    if (isSuccess && auth.currentUser != null) {
-                      if (auth.currentUser!.email != null) {
-                        loginStauts = auth.currentUser!.email! + '\nlog in';
-                        isLoggedIn = true;
-                      } else {
-                        loginStauts = 'No email log in';
-                      }
-                      setState(() {});
+                    FirebaseLoginStatus status =
+                        await _loginWithEmailAndPassword(
+                            _controller1.text, _controller2.text);
+                    if (status == FirebaseLoginStatus.success) {
+                      loginStauts = auth.currentUser!.email! + '\nlog in';
+                      isLoggedIn = true;
+                    } else if (status == FirebaseLoginStatus.cancel) {
+                      loginStauts = 'Login cancelled';
                     } else {
-                      setState(() {
-                        loginStauts = 'Log in failed';
-                      });
+                      loginStauts = 'Log in failed';
                     }
+                    setState(() {});
                   } else {
                     setState(() {
                       loginStauts = 'Please enter a valid email';
@@ -195,13 +183,13 @@ class _TestAppState extends State<TestApp> {
     );
   }
 
-  Future<bool> _loginWithEmailAndPassword(String email, String password) async {
-    bool isSuccess = await loginHelper.signInWithEmailAndPassword(
+  Future<FirebaseLoginStatus> _loginWithEmailAndPassword(
+      String email, String password) async {
+    return await loginHelper.signInWithEmailAndPassword(
       email,
       password,
       context: context,
       askAgain: true,
     );
-    return isSuccess;
   }
 }
