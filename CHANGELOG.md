@@ -1,3 +1,20 @@
+## 0.0.6
+
+- Upgrade flutter_facebook_auth to ^4.1.2
+- Upgrade firebase_auth to ^3.3.11
+- Upgrade sign_in_with_apple to ^3.3.0
+- Upgrade google_sign_in to ^5.2.4
+- Upgrade package_info_plus to ^1.4.0
+- Upgrade flutter_svg to ^1.0.3
+- Upgrade shared_preferences to ^2.0.13
+
+**BREAKING CHANGE:**
+- **Add enum FirebaseLoginStatus**
+- **Change login_helper return type to enum FirebaseLoginStatus**
+- **Change login_button parameter onSuccess and onFailed to onFinished**
+
+
+
 ## 0.0.5
 
 - Upgrade flutter_facebook_auth to ^4.1.1
