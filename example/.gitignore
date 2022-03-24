@@ -44,3 +44,6 @@ android/MirrorMediaDev.jks
 
 # Mac OS
 **/.DS_Store
+
+# facebook key
+android/app/src/main/res/strings.xml
