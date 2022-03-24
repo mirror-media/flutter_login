@@ -49,6 +49,8 @@
 		</array>
 		<key>FacebookAppID</key>
 		<string>175313259598308</string>
+		<key>FacebookClientToken</key>
+		<string>b9321470cc8b4649b9401041a0bc0fd8</string>
 		<key>FacebookDisplayName</key>
 		<string>鏡傳媒</string>
 		<key>LSApplicationQueriesSchemes</key>
