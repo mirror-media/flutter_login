@@ -1,3 +1,10 @@
+## 0.0.8
+
+- Upgrade sign_in_with_apple to ^4.1.0
+- Upgrade font_awesome_flutter to ^10.2.1
+- Upgrade flutter_lints to ^2.0.1
+
+
 ## 0.0.6
 
 - Upgrade flutter_facebook_auth to ^4.1.2
