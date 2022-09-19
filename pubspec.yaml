@@ -1,6 +1,6 @@
 name: flutter_login
 description: A Flutter package project help use firebase login.
-version: 0.0.7
+version: 0.0.8
 homepage:
 
 environment:
@@ -13,7 +13,7 @@ dependencies:
   # firebase auth
   firebase_auth: ^3.3.11
   # sign in with apple
-  sign_in_with_apple: ^3.3.0
+  sign_in_with_apple: ^4.1.0
   crypto: ^3.0.1
   # google sign in
   google_sign_in: ^5.2.4
@@ -26,14 +26,14 @@ dependencies:
   # svg file loader
   flutter_svg: ^1.0.3
   # The Font Awesome Icon pack available as set of Flutter Icons.
-  font_awesome_flutter: ^9.1.0
+  font_awesome_flutter: ^10.2.1
   # shared_preferences
   shared_preferences: ^2.0.13
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^1.0.0
+  flutter_lints: ^2.0.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
