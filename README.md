@@ -17,7 +17,7 @@ A Flutter package provide third party login buttons and helper to use firebase a
 Before use this package, make sure you have already set up your Firebase and settings of below packages.
 1. [google_sign_in](https://pub.dev/packages/google_sign_in)
 2. [flutter_facebook_auth](https://facebook.meedu.app/docs/intro)
-3. [sign_in_with_apple](https://pub.dev/packages/sign_in_with_apple) (Should only use on iOS now.)
+3. [sign_in_with_apple](https://pub.dev/packages/sign_in_with_apple)
 
 # Features
 
@@ -35,7 +35,7 @@ flutter_login:
     git:
       url: https://github.com/mirror-media/flutter_login.git
       ref: main
-      version: ^0.0.6
+      version: ^0.0.9
 ```
 
 2. Import library by adding the following line to where you want to use button or helper.
@@ -45,6 +45,7 @@ import 'package:flutter_login/flutter_login.dart';
 
 # Usage 
 ## Login type:
+Supported third-party logins
 ```dart
 enum LoginType {
   facebook,
@@ -53,6 +54,7 @@ enum LoginType {
 }
 ```
 ## Login Status:
+ Return firebase_auth login result
 ```dart
 enum FirebaseLoginStatus {
   cancel,
@@ -66,37 +68,53 @@ enum FirebaseLoginStatus {
 A prebuild button widget for each LoginType.
 
 ```dart
-Widget LoginButton({
-// LoginType is required, others are optional
-type: LoginType
+/// Define button login type. Required
+final LoginType type;
 
-// Do after login
-onFinished: Function(FirebaseLoginStatus result, bool isNewUser, dynamic error)? 
+/// Execute when login process finish
+final LoginFinishCallback? onFinished;
 
-// Pass the String if you want to customize the button text
-buttonText: String?
+/// Customize button text
+/// Default text:
+/// Apple: 以 Apple 帳號繼續
+/// Facebook: 以 Facebook 帳號繼續
+/// Google: 以 Google 帳號繼續
+final String? buttonText;
 
-// Change the text size of the LoginButton, default is 16.0
-textSize: double
+/// Customize button text size. Default is 16.0
+final double textSize;
 
-// Change the text color of the LoginButton, default is Colors.black
-textColor: Color
+/// Customize button text color. Default is black
+final Color textColor;
 
-// Whether or not show the icon, default is true
-showIcon: bool
+/// Whether to show the icon. Default is true
+final bool showIcon;
 
-// Change the background color of the LoginButton, default is Colors.white
-buttonBackgroundColor: Color
+/// Customize button backgroundColor. Default is white
+final Color buttonBackgroundColor;
 
-// Change the border color of the LoginButton, default is Colors.black
-buttonBorderColor: Color
+/// Customize button borderColor. Default is black
+final Color buttonBorderColor;
 
-// Change the loading animation color of the LoginButton, default is Colors.black12
-loadingAnimationColor: Color
+/// Customize button loading animation color. Default is black12
+final Color loadingAnimationColor;
 
-// Whether or not handle account-exists-with-different-credential error, default is true
-handlingAccountExistsWithDifferentCredentialError: bool
-});
+/// Whether to handle Firebase's "account-exists-with-different-credential" error
+/// Default is true
+/// If true, when error occur, will pop a dialog and link new credential to existing firebase user
+/// To know more, please read this [page](https://firebase.google.com/docs/auth/flutter/errors)
+final bool handleAccountExistsWithDifferentCredentialError;
+
+/// Customize button icon color.
+/// Default color:
+/// Apple: Black
+/// Facebook: RGBO(23, 120, 242, 1)
+/// Google: Colorful svg
+final Color? iconColor;
+
+/// Customize button icon. Default is logo by login type
+/// This will place in OutlinedButton's icon
+final Widget? icon;
 ```
 
 ## class LoginHelper:
@@ -123,44 +141,38 @@ email is the email address that will be sent to, link is the user will be redire
 
 Now support Google, Facebook, and Apple.
 
-They have same optional named parameter, handlingAccountExistsWithDifferentCredentialError and context.
+They have same optional named parameter: handleAccountExistsWithDifferentCredentialError.
 
-- handlingAccountExistsWithDifferentCredentialError: Decide whether or not handle account-exists-with-different-credential error, default is true.
-- context: It's for show the hint dialog when account-exists-with-different-credential error happened, when it is null, dialog will not be shown.
+- handleAccountExistsWithDifferentCredentialError: Decide whether or not handle account-exists-with-different-credential error, default is true.
 <br />
 
 signInWithGoogle:
 ```dart
 Future<FirebaseLoginStatus> signInWithGoogle({
-  bool handlingAccountExistsWithDifferentCredentialError = true,
-  BuildContext? context,
+  bool handleAccountExistsWithDifferentCredentialError = true,
 })
 ```
 signInWithFacebook:
 ```dart
 Future<FirebaseLoginStatus> signInWithFacebook({
-  bool handlingAccountExistsWithDifferentCredentialError = true,
-  BuildContext? context,
+  bool handleAccountExistsWithDifferentCredentialError = true,
 })
 ```
 signInWithApple:
 ```dart
 Future<FirebaseLoginStatus> signInWithApple({
-  bool handlingAccountExistsWithDifferentCredentialError = true,
-  BuildContext? context,
+  bool handleAccountExistsWithDifferentCredentialError = true,
 })
 ```
 <br />
 
 ### 3. Email and password sign in:
 
-There are two parameter: email and password. And three optional named parameters:  ifNotExistsCreateUser, askAgain, context.
+There are two parameter: email and password. And optional named parameters:  ifNotExistsCreateUser, askAgain.
 
 - ifNotExistsCreateUser: Decide if can't find user whether directly create one new user via createUserWithEmailAndPassword(), default is true.
 - askAgain: Decide whether show a dialog when user password not correct, default is false. 
 
-  **Because it will show dialog, context must be set, or it will be ignored.**
-- context: BuildContext for show dialog.
 
 ```dart
 Future<FirebaseLoginStatus> signInWithEmailAndPassword(
@@ -168,7 +180,6 @@ Future<FirebaseLoginStatus> signInWithEmailAndPassword(
   String password, {
   bool ifNotExistsCreateUser = true,
   bool askAgain = false,
-  BuildContext? context,
 })
 ```
 
@@ -176,20 +187,26 @@ Future<FirebaseLoginStatus> signInWithEmailAndPassword(
 
 ### 4. Create new user with email and password:
 
-There are two parameter: email and password. And two optional named parameters:  ifExistsTrySignIn, context.
+There are two parameter: email and password. And optional named parameters:  ifExistsTrySignIn.
 
 - ifExistsTrySignIn: Decide if email is already exists, whether directly try sign in, default is true.
-- context: BuildContext for show dialog, only use for signInWithEmailAndPassword() when ifExistsTrySignIn is true.
 
 ```dart
 Future<FirebaseLoginStatus> createUserWithEmailAndPassword(
   String email,
   String password, {
   bool ifExistsTrySignIn = true,
-  BuildContext? context,
 })
 ```
 <br />
+
+### 'account-exists-with-different-credential' error
+
+It will occur when user already exists in Firebase auth. 
+<br>By default this package will handle this error by show a dialog and ask user to sign in with default sign in method provide by Firebase, then link currrent sign in method to Firebase auth.
+<br> To know more, please check this [page](https://firebase.google.com/docs/auth/flutter/errors).
+
+<br>
 
 ### Others:
 
@@ -197,7 +214,7 @@ It has two getter, isNewUser and signinError.
 
 - isNewUser: It will return a boolean indicating whether user is new.
 
-  **Notice: Only use after signIn successfully, or may get error**
+  **Notice: Only use after signIn successfully, or may get error value**
 
 
 - signinError: It will return dynamic that previous sign in method catch error.
