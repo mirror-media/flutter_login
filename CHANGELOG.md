@@ -1,3 +1,14 @@
+## 0.0.9
+
+- Add one_context package to remove context in async functions
+- Add optional parameter icon and iconColor to LoginButton
+- Add comments to function and parameters
+- Upgrade example to Flutter 3
+
+**BREAKING CHANGE:**
+- **Refactor: change paramter name from "handlingAccountExistsWithDifferentCredentialError" to "handleAccountExistsWithDifferentCredentialError"**
+- **Remove context in function's parameter**
+
 ## 0.0.8
 
 - Upgrade sign_in_with_apple to ^4.1.0
