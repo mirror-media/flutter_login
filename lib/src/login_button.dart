@@ -40,7 +40,7 @@ class LoginButton extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _LoginButtonState createState() => _LoginButtonState();
+  State<LoginButton> createState() => _LoginButtonState();
 }
 
 class _LoginButtonState extends State<LoginButton> {
@@ -61,7 +61,7 @@ class _LoginButtonState extends State<LoginButton> {
     } else if (widget.type == LoginType.facebook) {
       _buttonText = '以 Facebook 帳號繼續';
       _icon = const FaIcon(
-        FontAwesomeIcons.facebookSquare,
+        FontAwesomeIcons.squareFacebook,
         size: 18,
         color: Color.fromRGBO(59, 89, 152, 1),
       );
