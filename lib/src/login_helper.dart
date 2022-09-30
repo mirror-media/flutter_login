@@ -14,6 +14,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
+/// Return firebase_auth login result
 enum FirebaseLoginStatus {
   cancel,
   success,
@@ -21,11 +22,19 @@ enum FirebaseLoginStatus {
 }
 
 class LoginHelper {
-  final FirebaseAuth auth = FirebaseAuth.instance;
-  late UserCredential userCredential;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  late UserCredential _userCredential;
+
+  /// Get whether current user is new user from Firebase auth
+  /// <br> **Use this value after login is successful**
   bool isNewUser = false;
+
+  /// Get error when login
+  /// <br> **May get null when no error or still in process**
   dynamic error;
 
+  /// Sign in to Firebase with email and link
+  /// <br> This function only send email, you need to handle login dynamic link yourself
   Future<bool> signInWithEmailAndLink(String email, String link) async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     var acs = ActionCodeSettings(
@@ -41,7 +50,7 @@ class LoginHelper {
     );
 
     bool isSuccess = false;
-    await auth
+    await _auth
         .sendSignInLinkToEmail(email: email, actionCodeSettings: acs)
         .catchError((onError) {
       print('Error sending email verification $onError');
@@ -54,6 +63,7 @@ class LoginHelper {
     return isSuccess;
   }
 
+  /// Sign in to Firebase with Google
   Future<FirebaseLoginStatus> signInWithGoogle({
     bool handleAccountExistsWithDifferentCredentialError = true,
   }) async {
@@ -76,8 +86,8 @@ class LoginHelper {
       );
 
       // Once signed in, return the UserCredential
-      userCredential = await auth.signInWithCredential(credential);
-      isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
+      _userCredential = await _auth.signInWithCredential(credential);
+      isNewUser = _userCredential.additionalUserInfo?.isNewUser ?? false;
 
       return FirebaseLoginStatus.success;
     } on FirebaseAuthException catch (e) {
@@ -99,6 +109,7 @@ class LoginHelper {
     }
   }
 
+  /// Sign in to Firebase with Facebook
   Future<FirebaseLoginStatus> signInWithFacebook({
     bool handeAccountExistsWithDifferentCredentialError = true,
   }) async {
@@ -111,8 +122,8 @@ class LoginHelper {
         final OAuthCredential credential =
             FacebookAuthProvider.credential(loginResult.accessToken!.token);
         // Once signed in, return the UserCredential
-        userCredential = await auth.signInWithCredential(credential);
-        isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
+        _userCredential = await _auth.signInWithCredential(credential);
+        isNewUser = _userCredential.additionalUserInfo?.isNewUser ?? false;
         return FirebaseLoginStatus.success;
       } else if (loginResult.status == LoginStatus.cancelled) {
         return FirebaseLoginStatus.cancel;
@@ -145,6 +156,7 @@ class LoginHelper {
     return digest.toString();
   }
 
+  /// Sign in to Firebase with Apple
   Future<FirebaseLoginStatus> signInWithApple({
     bool handleAccountExistsWithDifferentCredentialError = true,
   }) async {
@@ -173,8 +185,8 @@ class LoginHelper {
 
       // Sign in the user with Firebase. If the nonce we generated earlier does
       // not match the nonce in `appleCredential.identityToken`, sign in will fail.
-      userCredential = await auth.signInWithCredential(oauthCredential);
-      isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
+      _userCredential = await _auth.signInWithCredential(oauthCredential);
+      isNewUser = _userCredential.additionalUserInfo?.isNewUser ?? false;
       return FirebaseLoginStatus.success;
     } on FirebaseAuthException catch (e) {
       error = e;
@@ -200,15 +212,16 @@ class LoginHelper {
     }
   }
 
+  /// Create new user in Firebase with email and password
   Future<FirebaseLoginStatus> createUserWithEmailAndPassword(
     String email,
     String password, {
     bool ifExistsTrySignIn = true,
   }) async {
     try {
-      userCredential = await FirebaseAuth.instance
+      _userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
-      isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
+      isNewUser = _userCredential.additionalUserInfo?.isNewUser ?? false;
       return FirebaseLoginStatus.success;
     } on FirebaseAuthException catch (e) {
       error = e;
@@ -231,6 +244,7 @@ class LoginHelper {
     }
   }
 
+  /// Sign in to Firebase with email and password
   Future<FirebaseLoginStatus> signInWithEmailAndPassword(
     String email,
     String password, {
@@ -238,9 +252,9 @@ class LoginHelper {
     bool askAgain = false,
   }) async {
     try {
-      userCredential = await FirebaseAuth.instance
+      _userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
-      isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
+      isNewUser = _userCredential.additionalUserInfo?.isNewUser ?? false;
       return FirebaseLoginStatus.success;
     } on FirebaseAuthException catch (e) {
       error = e;
@@ -254,7 +268,7 @@ class LoginHelper {
         }
       } else if (e.code == 'wrong-password') {
         List<String> userSignInMethods =
-            await auth.fetchSignInMethodsForEmail(email);
+            await _auth.fetchSignInMethodsForEmail(email);
         if (userSignInMethods.isNotEmpty &&
             !userSignInMethods.contains('password')) {
           return await _updateAccountPassword(
@@ -317,7 +331,7 @@ class LoginHelper {
     }
     if (result == FirebaseLoginStatus.success) {
       try {
-        userCredential.user!.updatePassword(password);
+        _userCredential.user!.updatePassword(password);
       } on FirebaseAuthException catch (e) {
         error = e;
         if (e.code == 'weak-password') {
@@ -343,7 +357,7 @@ class LoginHelper {
 
     // Fetch a list of what sign-in methods exist for the conflicting user
     List<String> userSignInMethods =
-        await auth.fetchSignInMethodsForEmail(email);
+        await _auth.fetchSignInMethodsForEmail(email);
     FirebaseLoginStatus result = FirebaseLoginStatus.error;
 
     if (userSignInMethods.first == 'facebook.com') {
@@ -369,9 +383,9 @@ class LoginHelper {
     }
     if (result == FirebaseLoginStatus.success) {
       // Link the pending credential with the existing account
-      userCredential =
-          await userCredential.user!.linkWithCredential(pendingCredential);
-      isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
+      _userCredential =
+          await _userCredential.user!.linkWithCredential(pendingCredential);
+      isNewUser = _userCredential.additionalUserInfo?.isNewUser ?? false;
     }
     return result;
   }
