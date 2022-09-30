@@ -188,7 +188,6 @@ class _TestAppState extends State<TestApp> {
     return await loginHelper.signInWithEmailAndPassword(
       email,
       password,
-      context: context,
       askAgain: true,
     );
   }
