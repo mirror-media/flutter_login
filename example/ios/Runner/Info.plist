@@ -116,5 +116,7 @@
 		<false/>
 		<key>NSMicrophoneUsageDescription</key>
 		<string>This application needs to access your microphone</string>
-	</dict>
+		<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+</dict>
 </plist>
