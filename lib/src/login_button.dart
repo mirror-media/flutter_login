@@ -95,21 +95,18 @@ class _LoginButtonState extends State<LoginButton> {
         FirebaseLoginStatus result;
         if (widget.type == LoginType.apple) {
           result = await _loginHelper.signInWithApple(
-            handlingAccountExistsWithDifferentCredentialError:
+            handleAccountExistsWithDifferentCredentialError:
                 widget.handlingAccountExistsWithDifferentCredentialError,
-            context: context,
           );
         } else if (widget.type == LoginType.facebook) {
           result = await _loginHelper.signInWithFacebook(
-            handlingAccountExistsWithDifferentCredentialError:
+            handeAccountExistsWithDifferentCredentialError:
                 widget.handlingAccountExistsWithDifferentCredentialError,
-            context: context,
           );
         } else {
           result = await _loginHelper.signInWithGoogle(
-            handlingAccountExistsWithDifferentCredentialError:
+            handleAccountExistsWithDifferentCredentialError:
                 widget.handlingAccountExistsWithDifferentCredentialError,
-            context: context,
           );
         }
 

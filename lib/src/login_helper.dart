@@ -9,6 +9,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:one_context/one_context.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -54,8 +55,7 @@ class LoginHelper {
   }
 
   Future<FirebaseLoginStatus> signInWithGoogle({
-    bool handlingAccountExistsWithDifferentCredentialError = true,
-    BuildContext? context,
+    bool handleAccountExistsWithDifferentCredentialError = true,
   }) async {
     try {
       // Trigger the authentication flow
@@ -84,11 +84,11 @@ class LoginHelper {
       error = e;
       print('SignInWithGoogle failed error code: ${e.code}');
       print(e.message);
-      if (!handlingAccountExistsWithDifferentCredentialError) {
+      if (!handleAccountExistsWithDifferentCredentialError) {
         return FirebaseLoginStatus.error;
       }
       if (e.code == 'account-exists-with-different-credential') {
-        return await _accountExists(e, context);
+        return await _accountExists(e);
       } else {
         return FirebaseLoginStatus.error;
       }
@@ -100,8 +100,7 @@ class LoginHelper {
   }
 
   Future<FirebaseLoginStatus> signInWithFacebook({
-    bool handlingAccountExistsWithDifferentCredentialError = true,
-    BuildContext? context,
+    bool handeAccountExistsWithDifferentCredentialError = true,
   }) async {
     try {
       // Trigger the sign-in flow
@@ -124,11 +123,11 @@ class LoginHelper {
       error = e;
       print('SignInWithFacebook failed error code: ${e.code}');
       print(e.message);
-      if (!handlingAccountExistsWithDifferentCredentialError) {
+      if (!handeAccountExistsWithDifferentCredentialError) {
         return FirebaseLoginStatus.error;
       }
       if (e.code == 'account-exists-with-different-credential') {
-        return await _accountExists(e, context);
+        return await _accountExists(e);
       } else {
         return FirebaseLoginStatus.error;
       }
@@ -147,8 +146,7 @@ class LoginHelper {
   }
 
   Future<FirebaseLoginStatus> signInWithApple({
-    bool handlingAccountExistsWithDifferentCredentialError = true,
-    BuildContext? context,
+    bool handleAccountExistsWithDifferentCredentialError = true,
   }) async {
     // To prevent replay attacks with the credential returned from Apple, we
     // include a nonce in the credential request. When signing in with
@@ -182,11 +180,11 @@ class LoginHelper {
       error = e;
       print('signInWithApple failed error code: ${e.code}');
       print(e.message);
-      if (!handlingAccountExistsWithDifferentCredentialError) {
+      if (!handleAccountExistsWithDifferentCredentialError) {
         return FirebaseLoginStatus.error;
       }
       if (e.code == 'account-exists-with-different-credential') {
-        return await _accountExists(e, context);
+        return await _accountExists(e);
       } else {
         return FirebaseLoginStatus.error;
       }
@@ -206,7 +204,6 @@ class LoginHelper {
     String email,
     String password, {
     bool ifExistsTrySignIn = true,
-    BuildContext? context,
   }) async {
     try {
       userCredential = await FirebaseAuth.instance
@@ -223,7 +220,6 @@ class LoginHelper {
           return await signInWithEmailAndPassword(
             email,
             password,
-            context: context,
           );
         }
       }
@@ -240,7 +236,6 @@ class LoginHelper {
     String password, {
     bool ifNotExistsCreateUser = true,
     bool askAgain = false,
-    BuildContext? context,
   }) async {
     try {
       userCredential = await FirebaseAuth.instance
@@ -255,7 +250,6 @@ class LoginHelper {
           return await createUserWithEmailAndPassword(
             email,
             password,
-            context: context,
           );
         }
       } else if (e.code == 'wrong-password') {
@@ -266,13 +260,11 @@ class LoginHelper {
           return await _updateAccountPassword(
             email,
             password,
-            context,
             userSignInMethods,
           );
-        } else if (askAgain && context != null) {
+        } else if (askAgain) {
           print('Wrong password provided for that user.');
           String? newPassword = await _askUserKeyPassword(
-            context,
             email,
             isTryAgain: true,
           );
@@ -283,7 +275,6 @@ class LoginHelper {
               email,
               newPassword,
               askAgain: askAgain,
-              context: context,
             );
           }
         }
@@ -295,41 +286,31 @@ class LoginHelper {
   Future<FirebaseLoginStatus> _updateAccountPassword(
     String email,
     String password,
-    BuildContext? context,
     List<String> userSignInMethods,
   ) async {
     FirebaseLoginStatus result = FirebaseLoginStatus.error;
 
     if (userSignInMethods.first == 'facebook.com') {
-      if (context != null) {
-        await _showErrorHint(
-          context,
-          'Facebook',
-          email,
-          isUpdatePassword: true,
-        );
-      }
+      await _showErrorHint(
+        'Facebook',
+        email,
+        isUpdatePassword: true,
+      );
 
       result = await signInWithFacebook();
     } else if (userSignInMethods.first == 'apple.com') {
-      if (context != null) {
-        await _showErrorHint(
-          context,
-          'Apple',
-          email,
-          isUpdatePassword: true,
-        );
-      }
+      await _showErrorHint(
+        'Apple',
+        email,
+        isUpdatePassword: true,
+      );
       result = await signInWithApple();
     } else if (userSignInMethods.first == 'google.com') {
-      if (context != null) {
-        await _showErrorHint(
-          context,
-          'Google',
-          email,
-          isUpdatePassword: true,
-        );
-      }
+      await _showErrorHint(
+        'Google',
+        email,
+        isUpdatePassword: true,
+      );
       result = await signInWithGoogle();
     } else {
       print('no sign in method already exists');
@@ -351,7 +332,6 @@ class LoginHelper {
 
   Future<FirebaseLoginStatus> _accountExists(
     FirebaseAuthException e,
-    BuildContext? context,
   ) async {
     if (e.email == null || e.credential == null) {
       print('email or credential is missing');
@@ -367,31 +347,22 @@ class LoginHelper {
     FirebaseLoginStatus result = FirebaseLoginStatus.error;
 
     if (userSignInMethods.first == 'facebook.com') {
-      if (context != null) {
-        await _showErrorHint(context, 'Facebook', email);
-      }
+      await _showErrorHint('Facebook', email);
       result = await signInWithFacebook();
     } else if (userSignInMethods.first == 'apple.com') {
-      if (context != null) {
-        await _showErrorHint(context, 'Apple', email);
-      }
+      _showErrorHint('Apple', email);
       result = await signInWithApple();
     } else if (userSignInMethods.first == 'google.com') {
-      if (context != null) {
-        await _showErrorHint(context, 'Google', email);
-      }
+      await _showErrorHint('Google', email);
       result = await signInWithGoogle();
     } else if (userSignInMethods.first == 'password') {
-      if (context != null) {
-        String? newPassword = await _askUserKeyPassword(context, email);
-        if (newPassword != null) {
-          result = await signInWithEmailAndPassword(
-            email,
-            newPassword,
-            context: context,
-            askAgain: true,
-          );
-        }
+      String? newPassword = await _askUserKeyPassword(email);
+      if (newPassword != null) {
+        result = await signInWithEmailAndPassword(
+          email,
+          newPassword,
+          askAgain: true,
+        );
       }
     } else {
       print('no sign in method already exists');
@@ -407,8 +378,7 @@ class LoginHelper {
 
   dynamic get signinError => error;
 
-  _showErrorHint(
-    BuildContext context,
+  Future<void> _showErrorHint(
     String loginType,
     String email, {
     bool isUpdatePassword = false,
@@ -420,43 +390,35 @@ class LoginHelper {
       message =
           '由於$email曾使用$loginType登入，故麻煩您接下來先以$loginType登入$email以新增密碼\n\n登入成功後未來即可使用此密碼登入';
     }
+
+    Widget dialog;
     if (Platform.isIOS) {
-      await showCupertinoDialog(
-        context: context,
-        builder: (context) {
-          return CupertinoAlertDialog(
-            title: Text(title),
-            content: Text(message),
-            actions: [
-              CupertinoDialogAction(
-                child: const Text('確定'),
-                onPressed: () => Navigator.of(context).pop(),
-              )
-            ],
-          );
-        },
+      dialog = CupertinoAlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          CupertinoDialogAction(
+            child: const Text('確定'),
+            onPressed: () => OneContext().pop(),
+          )
+        ],
       );
     } else {
-      await showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text(title),
-            content: Text(message),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('確定'),
-              )
-            ],
-          );
-        },
+      dialog = AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => OneContext().pop(),
+            child: const Text('確定'),
+          )
+        ],
       );
     }
+    await OneContext().showDialog(builder: (context) => dialog);
   }
 
   Future<String?> _askUserKeyPassword(
-    BuildContext context,
     String email, {
     bool isTryAgain = false,
   }) async {
@@ -468,102 +430,93 @@ class LoginHelper {
       title = '密碼錯誤';
       content = '請重新輸入密碼';
     }
+    Widget dialog;
     if (Platform.isIOS) {
-      await showCupertinoDialog(
-        context: context,
-        builder: (context) {
-          return StatefulBuilder(builder: (context, setState) {
-            return CupertinoAlertDialog(
-              title: Text(title),
-              content: Column(
-                children: [
-                  Text(content),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  CupertinoTextField(
-                    obscureText: true,
-                    enableSuggestions: false,
-                    autocorrect: false,
-                    autofocus: true,
-                    onChanged: (value) {
-                      setState(() {
-                        password = value;
-                        if (password == '' || password == ' ') {
-                          password = null;
-                        }
-                      });
-                    },
-                    placeholder: "請輸入密碼",
-                  ),
-                ],
+      dialog = StatefulBuilder(builder: (context, setState) {
+        return CupertinoAlertDialog(
+          title: Text(title),
+          content: Column(
+            children: [
+              Text(content),
+              const SizedBox(
+                height: 10,
               ),
-              actions: [
-                CupertinoDialogAction(
-                  child: const Text('取消'),
-                  isDestructiveAction: true,
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-                CupertinoDialogAction(
-                  child: const Text('確定'),
-                  onPressed: password == null
-                      ? null
-                      : () => Navigator.of(context).pop(),
-                ),
-              ],
-            );
-          });
-        },
-      );
+              CupertinoTextField(
+                obscureText: true,
+                enableSuggestions: false,
+                autocorrect: false,
+                autofocus: true,
+                onChanged: (value) {
+                  setState(() {
+                    password = value;
+                    if (password == '' || password == ' ') {
+                      password = null;
+                    }
+                  });
+                },
+                placeholder: "請輸入密碼",
+              ),
+            ],
+          ),
+          actions: [
+            CupertinoDialogAction(
+              isDestructiveAction: true,
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('取消'),
+            ),
+            CupertinoDialogAction(
+              onPressed:
+                  password == null ? null : () => Navigator.of(context).pop(),
+              child: const Text('確定'),
+            ),
+          ],
+        );
+      });
     } else {
-      await showDialog(
-        context: context,
-        builder: (context) {
-          return StatefulBuilder(builder: (context, setState) {
-            return AlertDialog(
-              title: Text(title),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(content),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  TextField(
-                    obscureText: true,
-                    enableSuggestions: false,
-                    autocorrect: false,
-                    autofocus: true,
-                    onChanged: (value) {
-                      setState(() {
-                        password = value;
-                        if (password == '' || password == ' ') {
-                          password = null;
-                        }
-                      });
-                    },
-                    decoration: const InputDecoration(hintText: "請輸入密碼"),
-                  ),
-                ],
+      dialog = StatefulBuilder(builder: (context, setState) {
+        return AlertDialog(
+          title: Text(title),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(content),
+              const SizedBox(
+                height: 10,
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('取消'),
-                  style: TextButton.styleFrom(primary: Colors.red),
-                ),
-                TextButton(
-                  onPressed: password == null
-                      ? null
-                      : () => Navigator.of(context).pop(),
-                  child: const Text('確定'),
-                ),
-              ],
-            );
-          });
-        },
-      );
+              TextField(
+                obscureText: true,
+                enableSuggestions: false,
+                autocorrect: false,
+                autofocus: true,
+                onChanged: (value) {
+                  setState(() {
+                    password = value;
+                    if (password == '' || password == ' ') {
+                      password = null;
+                    }
+                  });
+                },
+                decoration: const InputDecoration(hintText: "請輸入密碼"),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed:
+                  password == null ? null : () => Navigator.of(context).pop(),
+              child: const Text('確定'),
+            ),
+          ],
+        );
+      });
     }
+
+    await OneContext().showDialog(builder: (context) => dialog);
 
     if (password == '' || password == ' ') {
       password = null;
