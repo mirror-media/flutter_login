@@ -5,26 +5,66 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'login_helper.dart';
 
+/// Supported third-party logins
 enum LoginType {
   facebook,
   google,
   apple,
 }
 
+/// Return when login process finish with result
 typedef LoginFinishCallback = void Function(
     FirebaseLoginStatus status, bool isNewUser, dynamic error);
 
 class LoginButton extends StatefulWidget {
+  /// Define button login type. Required
   final LoginType type;
+
+  /// Execute when login process finish
   final LoginFinishCallback? onFinished;
+
+  /// Customize button text
+  /// <br>Default text:
+  /// + Apple: 以 Apple 帳號繼續
+  /// + Facebook: 以 Facebook 帳號繼續
+  /// + Google: 以 Google 帳號繼續
   final String? buttonText;
+
+  /// Customize button text size. Default is 16.0
   final double textSize;
+
+  /// Customize button text color. Default is black
   final Color textColor;
+
+  /// Whether to show the icon. Default is true
   final bool showIcon;
+
+  /// Customize button backgroundColor. Default is white
   final Color buttonBackgroundColor;
+
+  /// Customize button borderColor. Default is black
   final Color buttonBorderColor;
+
+  /// Customize button loading animation color. Default is black12
   final Color loadingAnimationColor;
-  final bool handlingAccountExistsWithDifferentCredentialError;
+
+  /// Whether to handle Firebase's "account-exists-with-different-credential" error
+  /// <br> Default is true
+  /// <br> If true, when error occur, will pop a dialog and link new credential to existing firebase user
+  /// <br> To know more, please read this [page](https://firebase.google.com/docs/auth/flutter/errors)
+  final bool handleAccountExistsWithDifferentCredentialError;
+
+  /// Customize button icon color.
+  /// <br>Default color:
+  /// + Apple: Black
+  /// + Facebook: RGBO(23, 120, 242, 1)
+  /// + Google: Colorful svg
+  final Color? iconColor;
+
+  /// Customize button icon. Default is logo by login type
+  /// <br>This will place in OutlinedButton's icon
+  final Widget? icon;
+
   const LoginButton({
     Key? key,
     required this.type,
@@ -36,7 +76,9 @@ class LoginButton extends StatefulWidget {
     this.buttonBackgroundColor = Colors.white,
     this.buttonBorderColor = Colors.black,
     this.loadingAnimationColor = Colors.black12,
-    this.handlingAccountExistsWithDifferentCredentialError = true,
+    this.handleAccountExistsWithDifferentCredentialError = true,
+    this.iconColor,
+    this.icon,
   }) : super(key: key);
 
   @override
@@ -53,17 +95,17 @@ class _LoginButtonState extends State<LoginButton> {
   void initState() {
     if (widget.type == LoginType.apple) {
       _buttonText = '以 Apple 帳號繼續';
-      _icon = const FaIcon(
+      _icon = FaIcon(
         FontAwesomeIcons.apple,
         size: 18,
-        color: Colors.black,
+        color: widget.iconColor ?? Colors.black,
       );
     } else if (widget.type == LoginType.facebook) {
       _buttonText = '以 Facebook 帳號繼續';
-      _icon = const FaIcon(
+      _icon = FaIcon(
         FontAwesomeIcons.squareFacebook,
         size: 18,
-        color: Color.fromRGBO(59, 89, 152, 1),
+        color: widget.iconColor ?? const Color.fromRGBO(23, 120, 242, 1),
       );
     } else if (widget.type == LoginType.google) {
       _buttonText = '以 Google 帳號繼續';
@@ -72,6 +114,7 @@ class _LoginButtonState extends State<LoginButton> {
         package: 'flutter_login',
         width: 16,
         height: 16,
+        color: widget.iconColor,
       );
     }
 
@@ -81,6 +124,10 @@ class _LoginButtonState extends State<LoginButton> {
 
     if (widget.buttonText != null) {
       _buttonText = widget.buttonText!;
+    }
+
+    if (widget.icon != null) {
+      _icon = widget.icon!;
     }
     super.initState();
   }
@@ -96,17 +143,17 @@ class _LoginButtonState extends State<LoginButton> {
         if (widget.type == LoginType.apple) {
           result = await _loginHelper.signInWithApple(
             handleAccountExistsWithDifferentCredentialError:
-                widget.handlingAccountExistsWithDifferentCredentialError,
+                widget.handleAccountExistsWithDifferentCredentialError,
           );
         } else if (widget.type == LoginType.facebook) {
           result = await _loginHelper.signInWithFacebook(
             handeAccountExistsWithDifferentCredentialError:
-                widget.handlingAccountExistsWithDifferentCredentialError,
+                widget.handleAccountExistsWithDifferentCredentialError,
           );
         } else {
           result = await _loginHelper.signInWithGoogle(
             handleAccountExistsWithDifferentCredentialError:
-                widget.handlingAccountExistsWithDifferentCredentialError,
+                widget.handleAccountExistsWithDifferentCredentialError,
           );
         }
 
