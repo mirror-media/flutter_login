@@ -1,6 +1,6 @@
 name: flutter_login
 description: A Flutter package project help use firebase login.
-version: 0.0.12
+version: 0.0.13
 homepage:
 
 environment:
@@ -20,7 +20,7 @@ dependencies:
   # facebook sign in
   flutter_facebook_auth: ^4.1.2
   # package info
-  package_info_plus: ^6.0.0
+  package_info_plus: ^5.0.0
   # loading animations
   flutter_spinkit: ^5.1.0
   # svg file loader
